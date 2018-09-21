@@ -13,7 +13,9 @@ function blinkBlue() {
 }
 
 function setStyleToNodes(node, style) {
-  var container = document.createElement(node.tagName || "div");
+  var container = node.tagName
+    ? document.createElement(node.tagName)
+    : document.createDocumentFragment();
   node.childNodes.forEach(function(child) {
     if (child.nodeType === Node.TEXT_NODE) {
       var span = setStyleToTextNode(child, style);
@@ -36,7 +38,22 @@ function setStyleToTextNode(node, style) {
 }
 
 function underlineRange(range) {
-  node = setStyleToNodes(range.cloneContents(), "background-color: yellow");
+  if (range.startContainer.nodeType === Node.TEXT_NODE) {
+    var startRange = document.createRange();
+    startRange.setStart(range.startContainer, range.startOffset);
+    startRange.setEnd(range.startContainer, range.startContainer.length);
+    var startNode = setStyleToNodes(
+      startRange.cloneContents(),
+      "background-color: yellow"
+    );
+    startRange.deleteContents();
+    startRange.insertNode(startNode);
+    range.setStart(range.startContainer.parentElement.nextElementSibling, 0);
+  }
+  if (range.endContainer.nodeType === Node.TEXT_NODE) {
+    range.setEnd(range.endContainer.parentElement, 1);
+  }
+  var node = setStyleToNodes(range.cloneContents(), "background-color: yellow");
   range.deleteContents();
   range.insertNode(node);
   return node;
