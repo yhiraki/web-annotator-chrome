@@ -51,7 +51,16 @@ function underlineRange(range) {
     range.setStart(range.startContainer.parentElement.nextElementSibling, 0);
   }
   if (range.endContainer.nodeType === Node.TEXT_NODE) {
-    range.setEnd(range.endContainer.parentElement, 1);
+    var endRange = document.createRange();
+    endRange.setStart(range.endContainer, 0);
+    endRange.setEnd(range.endContainer, range.endOffset);
+    var endNode = setStyleToNodes(
+      endRange.cloneContents(),
+      "background-color: yellow"
+    );
+    endRange.deleteContents();
+    endRange.insertNode(endNode);
+    range.setEnd(range.endContainer.parentElement, 0);
   }
   var node = setStyleToNodes(range.cloneContents(), "background-color: yellow");
   range.deleteContents();
