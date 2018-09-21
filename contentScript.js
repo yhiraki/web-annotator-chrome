@@ -12,18 +12,34 @@ function blinkBlue() {
   range.insertNode(newNode); // 範囲選択箇所の先頭から、修飾したspanを挿入
 }
 
-function listTextNodes(node) {
-  var nodes = [];
+function setStyleToNodes(node, style) {
+  var container = document.createElement(node.tagName || "div");
   node.childNodes.forEach(function(child) {
     if (child.nodeType === Node.TEXT_NODE) {
-      var deco = document.createElement("span");
-      deco.innerHTML = child.textContent;
-      nodes.push(deco);
-    } else {
-      nodes.push(listTextNodes(child));
+      var span = setStyleToTextNode(child, style);
+      container.appendChild(span);
+    } else if (child.nodeType === Node.ELEMENT_NODE) {
+      container.appendChild(setStyleToNodes(child, style));
     }
   });
-  NodeList(nodes);
+  return container;
+}
+
+function setStyleToTextNode(node, style) {
+  if (node.nodeType !== Node.TEXT_NODE) {
+    throw new TypeError("Node must be TEXT_NODE");
+  }
+  var span = document.createElement("span");
+  span.setAttribute("style", style);
+  span.appendChild(node.cloneNode());
+  return span;
+}
+
+function underlineRange(range) {
+  node = setStyleToNodes(range.cloneContents(), "background-color: yellow");
+  range.deleteContents();
+  range.insertNode(node);
+  return node;
 }
 
 // //実用にはEventListenerに登録して、何かしらのイベント時に動くようにする必要がある。
