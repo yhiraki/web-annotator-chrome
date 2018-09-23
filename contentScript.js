@@ -12,6 +12,35 @@ function blinkBlue() {
   range.insertNode(newNode); // 範囲選択箇所の先頭から、修飾したspanを挿入
 }
 
+function isElement(obj) {
+  return obj && obj.nodeType && obj.nodeType === 1;
+}
+
+function searchCommonParentUp(targetNode, currentNode) {
+  if (!isElement(currentNode)) {
+    currentNode = currentNode.parentElement;
+  }
+  if (currentNode.contains(targetNode)) {
+    return currentNode;
+  } else {
+    return searchCommonParentUp(targetNode, currentNode.parentElement);
+  }
+  throw Error();
+}
+
+function getCommonParent(node1, node2) {
+  var result = searchCommonParentUp(node1, node2);
+  if (result === document.body) {
+    return searchCommonParentUp(node2, node1);
+  } else {
+    return result;
+  }
+}
+
+function getCommonParentElementByRange(range) {
+  return getCommonParent(range.startContainer, range.endContainer);
+}
+
 function setStyleToNodes(node, style) {
   var container = node.tagName
     ? document.createElement(node.tagName)
