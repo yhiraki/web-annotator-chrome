@@ -37,19 +37,70 @@ function getCommonParent(node1, node2) {
   }
 }
 
-function getCommonParentElementByRange(range) {
-  return getCommonParent(range.startContainer, range.endContainer);
+function extractChildTextNodes(node) {
+  return Array.prototype.map
+    .call(node.childNodes, function(n) {
+      if (n.nodeType === Node.TEXT_NODE && n.data.trim().length > 0) {
+        return n;
+      } else if (n.childNodes) {
+        return extractChildTextNodes(n);
+      }
+    })
+    .flat();
+}
+
+function setStyleToTextNode(node, style, startOffset, endOffset) {
+  var el = node.parentElement;
+  var text = node.cloneNode().data;
+  var startOffset = startOffset || 0;
+  var endOffset = endOffset || text.length;
+  var styledSpan = document.createElement("span");
+  var span = document.createElement("span");
+  styledSpan.setAttribute("style", style);
+  styledSpan.appendChild(
+    document.createTextNode(text.slice(startOffset, endOffset))
+  );
+  span.appendChild(document.createTextNode(text.slice(0, startOffset)));
+  span.appendChild(styledSpan);
+  span.appendChild(document.createTextNode(text.slice(endOffset, text.length)));
+  el.replaceChild(span, node);
+}
+
+function setStyleToTextNodeForRange(range, style) {
+  var parentNode = getCommonParent(range.startContainer, range.endContainer);
+  var textNodes = extractChildTextNodes(parentNode);
+  for (let i in textNodes) {
+    var n = textNodes[i];
+    var startOffset = null;
+    var endOffset = null;
+    if (n === range.startContainer) {
+      startOffset = range.startOffset;
+    }
+    if (n === range.endContainer) {
+      endOffset = range.endOffset;
+    }
+    if (range.intersectsNode(n)) {
+      setStyleToTextNode(n, style, startOffset, endOffset);
+    }
+  }
+  window.getSelection().removeAllRanges();
 }
 
 function setStyleToNodes(node, style) {
-  var container = node.tagName
+  if (node.innerHTML && node.innerHTML.trim() === "") {
+    return document.createDocumentFragment();
+  }
+  var container = node.tagNam
     ? document.createElement(node.tagName)
     : document.createDocumentFragment();
   node.childNodes.forEach(function(child) {
-    if (child.nodeType === Node.TEXT_NODE) {
+    if (child.nodeType === Node.TEXT_NODE && child.data.trim() !== "") {
       var span = setStyleToTextNode(child, style);
       container.appendChild(span);
-    } else if (child.nodeType === Node.ELEMENT_NODE) {
+    } else if (
+      child.nodeType === Node.ELEMENT_NODE &&
+      child.innerHTML.trim() !== ""
+    ) {
       container.appendChild(setStyleToNodes(child, style));
     }
   });
