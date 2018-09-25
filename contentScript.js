@@ -176,10 +176,13 @@ function getRangeFromJson(json) {
 }
 
 function highlihgtRange() {
-  const range = window.getSelection().getRangeAt(0);
-  console.log(`range selected: 
-${range}`);
+  const selection = window.getSelection();
+  if (selection.isCollapsed) {
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  console.log(`range selected: \n${range}`);
   setStyleToTextNodeForRange(range, "background-color: yellow");
 }
 
-window.addEventListener("mouseup", highlihgtRange);
+// window.addEventListener("mouseup", highlihgtRange);
