@@ -72,37 +72,6 @@ function setStyleToTextNodeForRange(range, style) {
   window.getSelection().removeAllRanges();
 }
 
-function setStyleToNodes(node, style) {
-  if (node.innerHTML && node.innerHTML.trim() === "") {
-    return document.createDocumentFragment();
-  }
-  const container = node.tagNam
-    ? document.createElement(node.tagName)
-    : document.createDocumentFragment();
-  node.childNodes.forEach(function(child) {
-    if (child.nodeType === Node.TEXT_NODE && child.data.trim() !== "") {
-      const span = setStyleToTextNode(child, style);
-      container.appendChild(span);
-    } else if (
-      child.nodeType === Node.ELEMENT_NODE &&
-      child.innerHTML.trim() !== ""
-    ) {
-      container.appendChild(setStyleToNodes(child, style));
-    }
-  });
-  return container;
-}
-
-function setStyleToTextNode(node, style) {
-  if (node.nodeType !== Node.TEXT_NODE) {
-    throw new TypeError("Node must be TEXT_NODE");
-  }
-  const span = document.createElement("span");
-  span.setAttribute("style", style);
-  span.appendChild(node.cloneNode());
-  return span;
-}
-
 function underlineRange(range) {
   if (range.startContainer.nodeType === Node.TEXT_NODE) {
     const startRange = document.createRange();
