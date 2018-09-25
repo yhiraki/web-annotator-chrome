@@ -1,17 +1,3 @@
-// //実用には、以下のスクリプトをEventListenerに登録して、何かしらのイベント時に動くようにする必要がある。
-// // 選択範囲の背景を青くする
-function blinkBlue() {
-  var sel = window.getSelection();
-  if (!sel.rangeCount) return; //範囲選択されている箇所がない場合は何もせず終了
-
-  var range = sel.getRangeAt(0);
-  var newNode = document.createElement("div");
-  newNode.setAttribute("style", "background-color: yellow;"); //範囲選択箇所の背景を青にする
-  newNode.innerHTML = sel.toString();
-  range.deleteContents(); // 範囲選択箇所を一旦削除
-  range.insertNode(newNode); // 範囲選択箇所の先頭から、修飾したspanを挿入
-}
-
 function isElement(obj) {
   return obj && obj.nodeType && obj.nodeType === 1;
 }
@@ -29,7 +15,7 @@ function searchCommonParentUp(targetNode, currentNode) {
 }
 
 function getCommonParent(node1, node2) {
-  var result = searchCommonParentUp(node1, node2);
+  const result = searchCommonParentUp(node1, node2);
   if (result === document.body) {
     return searchCommonParentUp(node2, node1);
   } else {
@@ -49,13 +35,13 @@ function extractChildTextNodes(node) {
     .flat();
 }
 
-function setStyleToTextNode(node, style, startOffset, endOffset) {
-  var el = node.parentElement;
-  var text = node.cloneNode().data;
-  var startOffset = startOffset || 0;
-  var endOffset = endOffset || text.length;
-  var styledSpan = document.createElement("span");
-  var span = document.createElement("span");
+function setStyleToTextNode(node, style, startOffset_, endOffset_) {
+  const el = node.parentElement;
+  const text = node.cloneNode().data;
+  const startOffset = startOffset_ || 0;
+  const endOffset = endOffset_ || text.length;
+  const styledSpan = document.createElement("span");
+  const span = document.createElement("span");
   styledSpan.setAttribute("style", style);
   styledSpan.appendChild(
     document.createTextNode(text.slice(startOffset, endOffset))
@@ -67,12 +53,12 @@ function setStyleToTextNode(node, style, startOffset, endOffset) {
 }
 
 function setStyleToTextNodeForRange(range, style) {
-  var parentNode = getCommonParent(range.startContainer, range.endContainer);
-  var textNodes = extractChildTextNodes(parentNode);
+  const parentNode = getCommonParent(range.startContainer, range.endContainer);
+  const textNodes = extractChildTextNodes(parentNode);
   for (let i in textNodes) {
-    var n = textNodes[i];
-    var startOffset = null;
-    var endOffset = null;
+    const n = textNodes[i];
+    let startOffset = null;
+    let endOffset = null;
     if (n === range.startContainer) {
       startOffset = range.startOffset;
     }
@@ -90,12 +76,12 @@ function setStyleToNodes(node, style) {
   if (node.innerHTML && node.innerHTML.trim() === "") {
     return document.createDocumentFragment();
   }
-  var container = node.tagNam
+  const container = node.tagNam
     ? document.createElement(node.tagName)
     : document.createDocumentFragment();
   node.childNodes.forEach(function(child) {
     if (child.nodeType === Node.TEXT_NODE && child.data.trim() !== "") {
-      var span = setStyleToTextNode(child, style);
+      const span = setStyleToTextNode(child, style);
       container.appendChild(span);
     } else if (
       child.nodeType === Node.ELEMENT_NODE &&
@@ -111,7 +97,7 @@ function setStyleToTextNode(node, style) {
   if (node.nodeType !== Node.TEXT_NODE) {
     throw new TypeError("Node must be TEXT_NODE");
   }
-  var span = document.createElement("span");
+  const span = document.createElement("span");
   span.setAttribute("style", style);
   span.appendChild(node.cloneNode());
   return span;
@@ -119,10 +105,10 @@ function setStyleToTextNode(node, style) {
 
 function underlineRange(range) {
   if (range.startContainer.nodeType === Node.TEXT_NODE) {
-    var startRange = document.createRange();
+    const startRange = document.createRange();
     startRange.setStart(range.startContainer, range.startOffset);
     startRange.setEnd(range.startContainer, range.startContainer.length);
-    var startNode = setStyleToNodes(
+    const startNode = setStyleToNodes(
       startRange.cloneContents(),
       "background-color: yellow"
     );
@@ -131,10 +117,10 @@ function underlineRange(range) {
     range.setStart(range.startContainer.parentElement.nextElementSibling, 0);
   }
   if (range.endContainer.nodeType === Node.TEXT_NODE) {
-    var endRange = document.createRange();
+    const endRange = document.createRange();
     endRange.setStart(range.endContainer, 0);
     endRange.setEnd(range.endContainer, range.endOffset);
-    var endNode = setStyleToNodes(
+    const endNode = setStyleToNodes(
       endRange.cloneContents(),
       "background-color: yellow"
     );
@@ -142,25 +128,24 @@ function underlineRange(range) {
     endRange.insertNode(endNode);
     range.setEnd(range.endContainer.parentElement, 0);
   }
-  var node = setStyleToNodes(range.cloneContents(), "background-color: yellow");
+  const node = setStyleToNodes(
+    range.cloneContents(),
+    "background-color: yellow"
+  );
   range.deleteContents();
   range.insertNode(node);
   return node;
 }
-
-// //実用にはEventListenerに登録して、何かしらのイベント時に動くようにする必要がある。
-// //以下では、仮に何かしらのキーが押された時に動くようにした。
-// window.addEventListener("mouseup", blinkBlue);
 
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
 function getPathFromElement(element) {
   if (element.id !== "") return 'id("' + element.id + '")';
   if (element === document.body) return element.tagName;
 
-  var ix = 0;
-  var siblings = element.parentNode.childNodes;
-  for (var i = 0; i < siblings.length; i++) {
-    var sibling = siblings[i];
+  const ix = 0;
+  const siblings = element.parentNode.childNodes;
+  for (let i = 0; i < siblings.length; i++) {
+    const sibling = siblings[i];
     if (sibling === element)
       return (
         getPathFromElement(element.parentNode) +
@@ -175,11 +160,11 @@ function getPathFromElement(element) {
 }
 
 function serializeRange(range) {
-  var startElement = range.startContainer.parentElement;
-  var startXPath = "//" + getPathFromElement(startElement);
-  var endElement = range.endContainer.parentElement;
-  var endXPath = "//" + getPathFromElement(endElement);
-  var serialized = {
+  const startElement = range.startContainer.parentElement;
+  const startXPath = "//" + getPathFromElement(startElement);
+  const endElement = range.endContainer.parentElement;
+  const endXPath = "//" + getPathFromElement(endElement);
+  const serialized = {
     startXPath: startXPath,
     startOffset: range.startOffset,
     endXPath: endXPath,
@@ -190,23 +175,23 @@ function serializeRange(range) {
 }
 
 function getElementsByXPath(expression, parentElement) {
-  var r = [];
-  var x = document.evaluate(
+  const r = [];
+  const x = document.evaluate(
     expression,
     parentElement || document,
     null,
     XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
     null
   );
-  for (var i = 0, l = x.snapshotLength; i < l; i++) {
+  for (let i = 0, l = x.snapshotLength; i < l; i++) {
     r.push(x.snapshotItem(i));
   }
   return r;
 }
 
-function getRangeFromJson(jsonText) {
-  var rangeParam = JSON.parse(jsonText);
-  var range = document.createRange();
+function getRangeFromJson(json) {
+  const rangeParam = JSON.parse(json);
+  const range = document.createRange();
   range.setStart(
     getElementsByXPath(rangeParam.startXPath)[0].childNodes[0],
     rangeParam.startOffset
@@ -218,10 +203,4 @@ function getRangeFromJson(jsonText) {
   return range;
 }
 
-function highlihgtRange() {
-  var range = window.getSelection().getRangeAt(0);
-}
-
 document.body.addEventListener("mouseup", highlihgtRange);
-
-console.log("hogehoge");
