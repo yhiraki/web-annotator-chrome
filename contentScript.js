@@ -49,12 +49,14 @@ function setStyleToTextNode(node, style, startOffset_, endOffset_) {
   span.appendChild(document.createTextNode(text.slice(0, startOffset)));
   span.appendChild(styledSpan);
   span.appendChild(document.createTextNode(text.slice(endOffset, text.length)));
+  console.log(span);
   el.replaceChild(span, node);
 }
 
 function setStyleToTextNodeForRange(range, style) {
   const parentNode = getCommonParent(range.startContainer, range.endContainer);
   const textNodes = extractChildTextNodes(parentNode);
+  console.log(`style for range: \n${range}`);
   for (let i in textNodes) {
     const n = textNodes[i];
     let startOffset = null;
@@ -66,6 +68,7 @@ function setStyleToTextNodeForRange(range, style) {
       endOffset = range.endOffset;
     }
     if (range.intersectsNode(n)) {
+      console.log(`style for textNode: \n${n}`);
       setStyleToTextNode(n, style, startOffset, endOffset);
     }
   }
@@ -173,8 +176,9 @@ function getRangeFromJson(json) {
 }
 
 function highlihgtRange() {
-  let range = window.getSelection().getRangeAt(0);
-  console.log(range);
+  const range = window.getSelection().getRangeAt(0);
+  console.log(`range selected: 
+${range}`);
   setStyleToTextNodeForRange(range, "background-color: yellow");
 }
 
