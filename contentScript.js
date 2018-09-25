@@ -203,4 +203,10 @@ function getRangeFromJson(json) {
   return range;
 }
 
-document.body.addEventListener("mouseup", highlihgtRange);
+function highlihgtRange() {
+  let range = window.getSelection().getRangeAt(0);
+  console.log(range);
+  setStyleToTextNodeForRange(range, "background-color: yellow");
+}
+
+window.addEventListener("mouseup", highlihgtRange);
