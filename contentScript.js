@@ -75,40 +75,6 @@ function setStyleToTextNodeForRange(range, style) {
   window.getSelection().removeAllRanges();
 }
 
-function underlineRange(range) {
-  if (range.startContainer.nodeType === Node.TEXT_NODE) {
-    const startRange = document.createRange();
-    startRange.setStart(range.startContainer, range.startOffset);
-    startRange.setEnd(range.startContainer, range.startContainer.length);
-    const startNode = setStyleToNodes(
-      startRange.cloneContents(),
-      "background-color: yellow"
-    );
-    startRange.deleteContents();
-    startRange.insertNode(startNode);
-    range.setStart(range.startContainer.parentElement.nextElementSibling, 0);
-  }
-  if (range.endContainer.nodeType === Node.TEXT_NODE) {
-    const endRange = document.createRange();
-    endRange.setStart(range.endContainer, 0);
-    endRange.setEnd(range.endContainer, range.endOffset);
-    const endNode = setStyleToNodes(
-      endRange.cloneContents(),
-      "background-color: yellow"
-    );
-    endRange.deleteContents();
-    endRange.insertNode(endNode);
-    range.setEnd(range.endContainer.parentElement, 0);
-  }
-  const node = setStyleToNodes(
-    range.cloneContents(),
-    "background-color: yellow"
-  );
-  range.deleteContents();
-  range.insertNode(node);
-  return node;
-}
-
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
 function getPathFromElement(element) {
   if (element.id !== "") return 'id("' + element.id + '")';
