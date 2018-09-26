@@ -216,5 +216,24 @@ function restoreHighlights() {
   }
 }
 
-window.addEventListener("mouseup", highlihgtRange);
+function togglePenEnableFactory() {
+  let penEnabled = false;
+  return function togglePenEnable() {
+    if (penEnabled) {
+      window.removeEventListener("mouseup", highlihgtRange);
+      penEnabled = false;
+    } else {
+      window.addEventListener("mouseup", highlihgtRange);
+      penEnabled = true;
+    }
+  };
+}
+
+const toggletogglePen = togglePenEnableFactory();
+chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request == "togglePen") {
+    togglePenEnable();
+  }
+});
+
 window.addEventListener("load", restoreHighlights);
