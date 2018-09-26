@@ -1,3 +1,28 @@
+const storage = localStorage;
+const storageKey = "highlighter";
+
+function storageSet(value) {
+  let data = storage.getItem(storageKey) || "{}";
+  data = JSON.parse(data);
+  if (!data.ranges) {
+    data.ranges = [];
+  }
+  data.ranges.push(value);
+  data.ranges = data.ranges.filter((x, i, self) => self.indexOf(x) === i);
+  storage.setItem(storageKey, JSON.stringify(data));
+}
+
+function storageGet() {}
+
+function isRangeEqual(range1, range2) {
+  return (
+    range1.startOffset === range2.startOffset &&
+    range1.startContainer === range2.startContainer &&
+    range1.endOffset === range2.endOffset &&
+    range1.endContainer === range2.endContainer
+  );
+}
+
 function isElement(obj) {
   return obj && obj.nodeType && obj.nodeType === 1;
 }
