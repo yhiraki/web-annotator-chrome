@@ -66,18 +66,20 @@ function setAttributeToTextNode(node, attrs, startOffset_, endOffset_) {
   const startOffset = startOffset_ || 0;
   const endOffset = endOffset_ || text.length;
   const wrapper = document.createElement("span");
-  const span = document.createElement("span");
+  const fragment = document.createDocumentFragment();
   for (k in attrs) {
     wrapper.setAttribute(k, attrs[k]);
   }
   wrapper.appendChild(
     document.createTextNode(text.slice(startOffset, endOffset))
   );
-  span.appendChild(document.createTextNode(text.slice(0, startOffset)));
-  span.appendChild(wrapper);
-  span.appendChild(document.createTextNode(text.slice(endOffset, text.length)));
-  console.log(span);
-  el.replaceChild(span, node);
+  fragment.appendChild(document.createTextNode(text.slice(0, startOffset)));
+  fragment.appendChild(wrapper);
+  fragment.appendChild(
+    document.createTextNode(text.slice(endOffset, text.length))
+  );
+  console.log(fragment);
+  el.replaceChild(fragment, node);
 }
 
 function setAttributeToTextNodeForRange(range, attrs) {
@@ -105,7 +107,7 @@ function setAttributeToTextNodeForRange(range, attrs) {
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
 function getPathFromElement(element) {
   if (element.id !== "") return 'id("' + element.id + '")';
-  if (element === document.body) return element.tagName;
+  if (element === document.body) return "/HTML/" + element.tagName;
 
   let ix = 0;
   const siblings = element.parentNode.childNodes;
@@ -126,9 +128,9 @@ function getPathFromElement(element) {
 
 function serializeRange(range) {
   const startElement = range.startContainer.parentElement;
-  const startXPath = "//" + getPathFromElement(startElement);
+  const startXPath = getPathFromElement(startElement);
   const endElement = range.endContainer.parentElement;
-  const endXPath = "//" + getPathFromElement(endElement);
+  const endXPath = getPathFromElement(endElement);
   const serialized = {
     startXPath: startXPath,
     startOffset: range.startOffset,
@@ -173,6 +175,7 @@ function highlihgtRange() {
     return;
   }
   const range = selection.getRangeAt(0);
+  const serialized = serializeRange(range);
   const contents = range.cloneContents();
   if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
     if (
@@ -192,8 +195,6 @@ function highlihgtRange() {
     style: "background-color: yellow",
     class: "highlighted"
   });
-  const serialized = serializeRange(range);
-  console.log(serialized);
   storageSet(serialized);
 }
 
