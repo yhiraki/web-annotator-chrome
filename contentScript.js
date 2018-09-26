@@ -35,28 +35,30 @@ function extractChildTextNodes(node) {
     .flat();
 }
 
-function setStyleToTextNode(node, style, startOffset_, endOffset_) {
+function setAttributeToTextNode(node, attrs, startOffset_, endOffset_) {
   const el = node.parentElement;
   const text = node.cloneNode().data;
   const startOffset = startOffset_ || 0;
   const endOffset = endOffset_ || text.length;
-  const styledSpan = document.createElement("span");
+  const wrapper = document.createElement("span");
   const span = document.createElement("span");
-  styledSpan.setAttribute("style", style);
-  styledSpan.appendChild(
+  for (k in attrs) {
+    wrapper.setAttribute(k, attrs[k]);
+  }
+  wrapper.appendChild(
     document.createTextNode(text.slice(startOffset, endOffset))
   );
   span.appendChild(document.createTextNode(text.slice(0, startOffset)));
-  span.appendChild(styledSpan);
+  span.appendChild(wrapper);
   span.appendChild(document.createTextNode(text.slice(endOffset, text.length)));
   console.log(span);
   el.replaceChild(span, node);
 }
 
-function setStyleToTextNodeForRange(range, style) {
+function setAttributeToTextNodeForRange(range, attrs) {
   const parentNode = getCommonParent(range.startContainer, range.endContainer);
   const textNodes = extractChildTextNodes(parentNode);
-  console.log(`style for range: \n${range}`);
+  console.log(`add attrs for range: \n${range}`);
   for (let i in textNodes) {
     const n = textNodes[i];
     let startOffset = null;
@@ -68,8 +70,8 @@ function setStyleToTextNodeForRange(range, style) {
       endOffset = range.endOffset;
     }
     if (range.intersectsNode(n)) {
-      console.log(`style for textNode: \n${n}`);
-      setStyleToTextNode(n, style, startOffset, endOffset);
+      console.log(`add attrs for textNode: \n${n}`);
+      setAttributeToTextNode(n, attrs, startOffset, endOffset);
     }
   }
   window.getSelection().removeAllRanges();
