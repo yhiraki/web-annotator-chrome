@@ -2,17 +2,20 @@ const storage = localStorage;
 const storageKey = "highlighter";
 
 function storageSet(value) {
-  let data = storage.getItem(storageKey) || "{}";
-  data = JSON.parse(data);
-  if (!data.ranges) {
-    data.ranges = [];
-  }
+  let data = storageGet();
   data.ranges.push(value);
   data.ranges = data.ranges.filter((x, i, self) => self.indexOf(x) === i);
   storage.setItem(storageKey, JSON.stringify(data));
 }
 
-function storageGet() {}
+function storageGet() {
+  let data = storage.getItem(storageKey) || "{}";
+  data = JSON.parse(data);
+  if (!data.ranges) {
+    data.ranges = [];
+  }
+  return data;
+}
 
 function isRangeEqual(range1, range2) {
   return (
@@ -137,6 +140,8 @@ function serializeRange(range) {
     endXPath: endXPath,
     endOffset: range.endOffset
   };
+  console.log(range);
+  console.log(serialized);
   return JSON.stringify(serialized);
 }
 
@@ -169,12 +174,17 @@ function getRangeFromJson(json) {
   return range;
 }
 
-function highlihgtRange() {
-  const selection = window.getSelection();
-  if (selection.isCollapsed) {
-    return;
+function highlihgtRange(range_) {
+  let range;
+  if (range_.startContainer && range_.endContainer) {
+    range = range_;
+  } else {
+    const selection = window.getSelection();
+    if (selection.isCollapsed) {
+      return;
+    }
+    range = selection.getRangeAt(0);
   }
-  const range = selection.getRangeAt(0);
   const serialized = serializeRange(range);
   const contents = range.cloneContents();
   if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
@@ -198,4 +208,13 @@ function highlihgtRange() {
   storageSet(serialized);
 }
 
+function restoreHighlights() {
+  const data = storageGet();
+  for (rangeJson of data.ranges) {
+    const range = getRangeFromJson(rangeJson);
+    highlihgtRange(range);
+  }
+}
+
 window.addEventListener("mouseup", highlihgtRange);
+window.addEventListener("load", restoreHighlights);
