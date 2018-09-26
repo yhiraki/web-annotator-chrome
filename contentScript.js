@@ -114,10 +114,10 @@ function getPathFromElement(element) {
   if (element.id !== "") return 'id("' + element.id + '")';
   if (element === document.body) return element.tagName;
 
-  const ix = 0;
+  let ix = 0;
   const siblings = element.parentNode.childNodes;
   for (let i = 0; i < siblings.length; i++) {
-    const sibling = siblings[i];
+    let sibling = siblings[i];
     if (sibling === element)
       return (
         getPathFromElement(element.parentNode) +
@@ -142,7 +142,6 @@ function serializeRange(range) {
     endXPath: endXPath,
     endOffset: range.endOffset
   };
-  console.log(serialized);
   return JSON.stringify(serialized);
 }
 
