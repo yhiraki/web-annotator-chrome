@@ -173,8 +173,28 @@ function highlihgtRange() {
     return;
   }
   const range = selection.getRangeAt(0);
+  const contents = range.cloneContents();
+  if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
+    if (
+      Array.from(
+        range.commonAncestorContainer.parentElement.classList
+      ).includes("highlighted")
+    ) {
+      console.log(`already highlighted`);
+      return;
+    }
+  } else if (contents.querySelectorAll(".highlighted").length > 0) {
+    console.log(`already highlighted`);
+    return;
+  }
   console.log(`range selected: \n${range}`);
-  setStyleToTextNodeForRange(range, "background-color: yellow");
+  setAttributeToTextNodeForRange(range, {
+    style: "background-color: yellow",
+    class: "highlighted"
+  });
+  const serialized = serializeRange(range);
+  console.log(serialized);
+  storageSet(serialized);
 }
 
-// window.addEventListener("mouseup", highlihgtRange);
+window.addEventListener("mouseup", highlihgtRange);
