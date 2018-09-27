@@ -113,32 +113,25 @@ function getPathFromElement(element) {
   if (element.id && element.id !== "") return 'id("' + element.id + '")';
   if (element === document.body) return "/HTML/" + element.tagName;
 
-  let ix = 0;
+  const nodeIdx = {};
   const siblings = element.parentNode.childNodes;
   for (let i = 0; i < siblings.length; i++) {
     let sibling = siblings[i];
+    nodeIdx[sibling.nodeType] = nodeIdx[sibling.nodeType] || 1;
     if (sibling === element) {
-      if (element.nodeType === Node.ELEMENT_NODE) {
-        return (
-          getPathFromElement(element.parentNode) +
-          "/" +
-          element.tagName +
-          "[" +
-          (ix + 1) +
-          "]"
-        );
-      } else if (element.nodeType === Node.TEXT_NODE) {
-        return (
-          getPathFromElement(element.parentNode) + "/text()[" + (ix + 1) + "]"
-        );
+      const idxString = "[" + nodeIdx[element.nodeType] + "]";
+      let path = "";
+      switch (element.nodeType) {
+        case Node.ELEMENT_NODE:
+          path = "/" + element.tagName + idxString;
+          break;
+        case Node.TEXT_NODE:
+          path = "/text()" + idxString;
+          break;
       }
+      return getPathFromElement(element.parentNode) + path;
     }
-    if (
-      (sibling.nodeType === Node.ELEMENT_NODE ||
-        sibling.nodeType === Node.TEXT_NODE) &&
-      sibling.tagName === element.tagName
-    )
-      ix++;
+    if (sibling.tagName === element.tagName) nodeIdx[sibling.nodeType]++;
   }
 }
 
@@ -150,6 +143,7 @@ function serializeRange(range) {
     endOffset: range.endOffset
   };
   console.log(range);
+  console.log(serialized);
   return JSON.stringify(serialized);
 }
 
