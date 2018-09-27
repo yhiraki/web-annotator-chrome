@@ -113,10 +113,11 @@ function getPathFromElement(element) {
   if (element.id && element.id !== "") return 'id("' + element.id + '")';
   if (element === document.body) return "/HTML/" + element.tagName;
 
-  let ix = 0;
+  let nodeIdx = {};
   const siblings = element.parentNode.childNodes;
   for (let i = 0; i < siblings.length; i++) {
     let sibling = siblings[i];
+    nodeIdx[sibling.nodeType] = nodeIdx[sibling.nodeType] || 1;
     if (sibling === element) {
       if (element.nodeType === Node.ELEMENT_NODE) {
         return (
@@ -124,21 +125,19 @@ function getPathFromElement(element) {
           "/" +
           element.tagName +
           "[" +
-          (ix + 1) +
+          nodeIdx[element.nodeType] +
           "]"
         );
       } else if (element.nodeType === Node.TEXT_NODE) {
         return (
-          getPathFromElement(element.parentNode) + "/text()[" + (ix + 1) + "]"
+          getPathFromElement(element.parentNode) +
+          "/text()[" +
+          nodeIdx[element.nodeType] +
+          "]"
         );
       }
     }
-    if (
-      (sibling.nodeType === Node.ELEMENT_NODE ||
-        sibling.nodeType === Node.TEXT_NODE) &&
-      sibling.tagName === element.tagName
-    )
-      ix++;
+    if (sibling.tagName === element.tagName) nodeIdx[sibling.nodeType]++;
   }
 }
 
