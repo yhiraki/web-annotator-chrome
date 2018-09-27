@@ -110,39 +110,46 @@ function setAttributeToTextNodeForRange(range, attrs) {
 
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
 function getPathFromElement(element) {
-  if (element.id !== "") return 'id("' + element.id + '")';
+  if (element.id && element.id !== "") return 'id("' + element.id + '")';
   if (element === document.body) return "/HTML/" + element.tagName;
 
   let ix = 0;
   const siblings = element.parentNode.childNodes;
   for (let i = 0; i < siblings.length; i++) {
     let sibling = siblings[i];
-    if (sibling === element)
-      return (
-        getPathFromElement(element.parentNode) +
-        "/" +
-        element.tagName +
-        "[" +
-        (ix + 1) +
-        "]"
-      );
-    if (sibling.nodeType === 1 && sibling.tagName === element.tagName) ix++;
+    if (sibling === element) {
+      if (element.nodeType === Node.ELEMENT_NODE) {
+        return (
+          getPathFromElement(element.parentNode) +
+          "/" +
+          element.tagName +
+          "[" +
+          (ix + 1) +
+          "]"
+        );
+      } else if (element.nodeType === Node.TEXT_NODE) {
+        return (
+          getPathFromElement(element.parentNode) + "/text()[" + (ix + 1) + "]"
+        );
+      }
+    }
+    if (
+      (sibling.nodeType === Node.ELEMENT_NODE ||
+        sibling.nodeType === Node.TEXT_NODE) &&
+      sibling.tagName === element.tagName
+    )
+      ix++;
   }
 }
 
 function serializeRange(range) {
-  const startElement = range.startContainer.parentElement;
-  const startXPath = getPathFromElement(startElement);
-  const endElement = range.endContainer.parentElement;
-  const endXPath = getPathFromElement(endElement);
   const serialized = {
-    startXPath: startXPath,
+    startXPath: getPathFromElement(range.startContainer),
     startOffset: range.startOffset,
-    endXPath: endXPath,
+    endXPath: getPathFromElement(range.endContainer),
     endOffset: range.endOffset
   };
   console.log(range);
-  console.log(serialized);
   return JSON.stringify(serialized);
 }
 
@@ -165,11 +172,11 @@ function getRangeFromJson(json) {
   const rangeParam = JSON.parse(json);
   const range = document.createRange();
   range.setStart(
-    getElementsByXPath(rangeParam.startXPath)[0].childNodes[0],
+    getElementsByXPath(rangeParam.startXPath)[0],
     rangeParam.startOffset
   );
   range.setEnd(
-    getElementsByXPath(rangeParam.endXPath)[0].childNodes[0],
+    getElementsByXPath(rangeParam.endXPath)[0],
     rangeParam.endOffset
   );
   return range;
