@@ -1,6 +1,13 @@
 const storage = localStorage;
 const storageKey = "highlighter";
 
+const dataStructure = {
+  url: {
+    notes: [{ id: 1, title: "", content: "", noteId: 1 }],
+    highlihgts: [{ id: 1, range: {}, text: "" }]
+  }
+};
+
 function storageSet(value) {
   const url = window.location.href;
   const data = storageGet();
