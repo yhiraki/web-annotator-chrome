@@ -2,18 +2,19 @@ const storage = localStorage;
 const storageKey = "highlighter";
 
 function storageSet(value) {
-  let data = storageGet();
-  data.ranges.push(value);
-  data.ranges = data.ranges.filter((x, i, self) => self.indexOf(x) === i);
+  const url = window.location.href;
+  const data = storageGet();
+  let d = data[url];
+  d.ranges.push(value);
+  d.ranges = d.ranges.filter((x, i, self) => self.indexOf(x) === i);
   storage.setItem(storageKey, JSON.stringify(data));
 }
 
 function storageGet() {
+  const url = window.location.href;
   let data = storage.getItem(storageKey) || "{}";
   data = JSON.parse(data);
-  if (!data.ranges) {
-    data.ranges = [];
-  }
+  if (!data[url]) data[url] = { ranges: [] };
   return data;
 }
 
@@ -209,9 +210,9 @@ function highlihgtRange(range_) {
 }
 
 function restoreHighlights() {
-  const data = storageGet();
-  for (rangeJson of data.ranges) {
-    const range = getRangeFromJson(rangeJson);
+  const data = storageGet()[window.location.href];
+  for (json of data.ranges) {
+    const range = getRangeFromJson(json);
     highlihgtRange(range);
   }
 }
@@ -229,7 +230,7 @@ function togglePenEnableFactory() {
   };
 }
 
-const toggletogglePen = togglePenEnableFactory();
+const togglePenEnable = togglePenEnableFactory();
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
   if (request == "togglePen") {
     togglePenEnable();
