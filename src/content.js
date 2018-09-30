@@ -239,10 +239,13 @@ function togglePenEnableFactory() {
 }
 
 const togglePenEnable = togglePenEnableFactory();
-chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  console.log("hgehoghoeg");
   if (request == "togglePen") {
     togglePenEnable();
   }
 });
 
 window.addEventListener("load", restoreHighlights);
+
+console.log("load done");
