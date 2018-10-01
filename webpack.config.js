@@ -3,20 +3,23 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
+const dist = path.resolve(__dirname, "dist");
+const src = path.resolve(__dirname, "src");
+
 module.exports = {
   optimization: {
     minimize: false
   },
   target: "web",
   entry: {
-    content: "./src/content.js",
-    background: "./src/background.js",
-    options: "./src/options.js",
-    popup: "./src/popup.js"
+    content: path.join(src, "content.js"),
+    background: path.join(src, "background.js"),
+    options: path.join(src, "options.js"),
+    popup: path.join(src, "popup.js")
   },
   output: {
     filename: "[name].js",
-    path: path.resolve(__dirname, "dist")
+    path: dist
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -32,11 +35,11 @@ module.exports = {
     new CopyWebpackPlugin([
       {
         from: "./src/manifest.json",
-        to: path.resolve(__dirname, "dist")
+        to: dist
       },
       {
         from: "./src/images",
-        to: path.resolve(__dirname, "dist", "images")
+        to: path.join(dist, "images")
       }
     ])
   ]
