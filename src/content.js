@@ -1,29 +1,5 @@
-const storage = localStorage;
-const storageKey = "highlighter";
-
-const dataStructure = {
-  url: {
-    notes: [{ id: 1, title: "", content: "", noteId: 1 }],
-    highlihgts: [{ id: 1, range: {}, text: "" }]
-  }
-};
-
-function storageSet(value) {
-  const url = window.location.href;
-  const data = storageGet();
-  let d = data[url];
-  d.ranges.push(value);
-  d.ranges = d.ranges.filter((x, i, self) => self.indexOf(x) === i);
-  storage.setItem(storageKey, JSON.stringify(data));
-}
-
-function storageGet() {
-  const url = window.location.href;
-  let data = storage.getItem(storageKey) || "{}";
-  data = JSON.parse(data);
-  if (!data[url]) data[url] = { ranges: [] };
-  return data;
-}
+import store from './store/index';
+import page from './api/page';
 
 function isRangeEqual(range1, range2) {
   return (
@@ -76,9 +52,9 @@ function setAttributeToTextNode(node, attrs, startOffset_, endOffset_) {
   const text = node.cloneNode().data;
   const startOffset = startOffset_ || 0;
   const endOffset = endOffset_ || text.length;
-  const wrapper = document.createElement("span");
+  const wrapper = document.createElement('span');
   const fragment = document.createDocumentFragment();
-  for (k in attrs) {
+  for (let k in attrs) {
     wrapper.setAttribute(k, attrs[k]);
   }
   wrapper.appendChild(
@@ -113,45 +89,6 @@ function setAttributeToTextNodeForRange(range, attrs) {
     }
   }
   window.getSelection().removeAllRanges();
-}
-
-// https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
-function getPathFromElement(element) {
-  if (element.id && element.id !== "") return 'id("' + element.id + '")';
-  if (element === document.body) return "/HTML/" + element.tagName;
-
-  const nodeIdx = {};
-  const siblings = element.parentNode.childNodes;
-  for (let i = 0; i < siblings.length; i++) {
-    let sibling = siblings[i];
-    nodeIdx[sibling.nodeType] = nodeIdx[sibling.nodeType] || 1;
-    if (sibling === element) {
-      const idxString = "[" + nodeIdx[element.nodeType] + "]";
-      let path = "";
-      switch (element.nodeType) {
-        case Node.ELEMENT_NODE:
-          path = "/" + element.tagName + idxString;
-          break;
-        case Node.TEXT_NODE:
-          path = "/text()" + idxString;
-          break;
-      }
-      return getPathFromElement(element.parentNode) + path;
-    }
-    if (sibling.tagName === element.tagName) nodeIdx[sibling.nodeType]++;
-  }
-}
-
-function serializeRange(range) {
-  const serialized = {
-    startXPath: getPathFromElement(range.startContainer),
-    startOffset: range.startOffset,
-    endXPath: getPathFromElement(range.endContainer),
-    endOffset: range.endOffset
-  };
-  console.log(range);
-  console.log(serialized);
-  return JSON.stringify(serialized);
 }
 
 function getElementsByXPath(expression, parentElement) {
@@ -194,45 +131,48 @@ function highlihgtRange(range_) {
     }
     range = selection.getRangeAt(0);
   }
-  const serialized = serializeRange(range);
+  store.dispatch('addHighlight', {
+    id: 1,
+    text: range.cloneContents().textContent,
+    range: range
+  });
+  console.log(store);
   const contents = range.cloneContents();
   if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
     if (
       Array.from(
         range.commonAncestorContainer.parentElement.classList
-      ).includes("highlighted")
+      ).includes('highlighted')
     ) {
       console.log(`already highlighted`);
       return;
     }
-  } else if (contents.querySelectorAll(".highlighted").length > 0) {
+  } else if (contents.querySelectorAll('.highlighted').length > 0) {
     console.log(`already highlighted`);
     return;
   }
   console.log(`range selected: \n${range}`);
   setAttributeToTextNodeForRange(range, {
-    style: "background-color: yellow",
-    class: "highlighted"
+    style: 'background-color: yellow',
+    class: 'highlighted'
   });
-  storageSet(serialized);
 }
 
 function restoreHighlights() {
-  const data = storageGet()[window.location.href];
-  for (json of data.ranges) {
-    const range = getRangeFromJson(json);
-    highlihgtRange(range);
-  }
+  page
+    .getHighights()
+    .then(result => result.forEach(i => highlihgtRange(i.range)));
 }
+// page.getHighights(window.location.href).then(result => console.log(result));
 
 function togglePenEnableFactory() {
   let penEnabled = false;
   return function togglePenEnable() {
     if (penEnabled) {
-      window.removeEventListener("mouseup", highlihgtRange);
+      window.removeEventListener('mouseup', highlihgtRange);
       penEnabled = false;
     } else {
-      window.addEventListener("mouseup", highlihgtRange);
+      window.addEventListener('mouseup', highlihgtRange);
       penEnabled = true;
     }
   };
@@ -240,12 +180,11 @@ function togglePenEnableFactory() {
 
 const togglePenEnable = togglePenEnableFactory();
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log("hgehoghoeg");
-  if (request == "togglePen") {
+  if (request == 'togglePen') {
     togglePenEnable();
   }
 });
 
-window.addEventListener("load", restoreHighlights);
+// window.addEventListener('load', restoreHighlights);
 
-console.log("load done");
+console.log('load done');
