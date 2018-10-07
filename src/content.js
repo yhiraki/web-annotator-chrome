@@ -163,7 +163,6 @@ function highlihgtRange(range_) {
 //     .getHighights()
 //     .then(result => result.forEach(i => highlihgtRange(i.range)));
 // }
-// page.getHighights(window.location.href).then(result => console.log(result));
 
 function togglePenEnableFactory() {
   let penEnabled = false;
@@ -179,6 +178,7 @@ function togglePenEnableFactory() {
 }
 
 const togglePenEnable = togglePenEnableFactory();
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request == 'togglePen') {
     togglePenEnable();
