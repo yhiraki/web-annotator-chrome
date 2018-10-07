@@ -1,4 +1,8 @@
 import store from './store/index';
+<<<<<<< HEAD
+=======
+import page from './api/page';
+>>>>>>> 08e125b6011ba96857cc1143e55f17dec9bc8bbe
 
 function isRangeEqual(range1, range2) {
   return (
@@ -136,7 +140,10 @@ function highlihgtRange(range_) {
     range: range
   });
   console.log(store);
+<<<<<<< HEAD
   store.dispatch('saveHighlights');
+=======
+>>>>>>> 08e125b6011ba96857cc1143e55f17dec9bc8bbe
   const contents = range.cloneContents();
   if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
     if (
@@ -158,11 +165,19 @@ function highlihgtRange(range_) {
   });
 }
 
+<<<<<<< HEAD
 // function restoreHighlights() {
 //   page
 //     .getHighights()
 //     .then(result => result.forEach(i => highlihgtRange(i.range)));
 // }
+=======
+function restoreHighlights() {
+  page
+    .getHighights()
+    .then(result => result.forEach(i => highlihgtRange(i.range)));
+}
+>>>>>>> 08e125b6011ba96857cc1143e55f17dec9bc8bbe
 // page.getHighights(window.location.href).then(result => console.log(result));
 
 function togglePenEnableFactory() {
