@@ -1,6 +1,9 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import { serializeRange, parseRange } from '../util/range';
+import storage from '../api/storage';
+
 Vue.use(Vuex);
 
 const notes = {
@@ -28,19 +31,28 @@ const highlights = {
     highlights: []
   },
   getters: {
-    allHighlights: function(state) {
-      return state.highlights;
-    }
+    allHighlights: state => state.highlights,
+    serializedHighlights: state =>
+      state.highlights.map(i => ({
+        id: i.id,
+        range: serializeRange(i.range),
+        text: i.text
+      }))
   },
   mutations: {
-    pushHighlight(state, highlight) {
-      state.push(highlight);
-    }
+    pushHighlight: (state, highlight) => state.highlights.push(highlight),
+    uniqueHighlights: state =>
+      (state.highlights = state.highlights.filter(
+        (x, i, self) => self.indexOf(x) === i
+      ))
   },
   actions: {
-    addHighlight({ commit }, highlight) {
+    addHighlight: ({ commit }, highlight) => {
       commit('pushHighlight', highlight);
-    }
+      commit('uniqueHighlights');
+    },
+    saveHighlights: ({ getters }) =>
+      storage.save('highlihgts', JSON.stringify(getters.serializedHighlights))
   }
 };
 

@@ -1,5 +1,4 @@
 import store from './store/index';
-import page from './api/page';
 
 function isRangeEqual(range1, range2) {
   return (
@@ -137,6 +136,7 @@ function highlihgtRange(range_) {
     range: range
   });
   console.log(store);
+  store.dispatch('saveHighlights');
   const contents = range.cloneContents();
   if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
     if (
@@ -158,11 +158,11 @@ function highlihgtRange(range_) {
   });
 }
 
-function restoreHighlights() {
-  page
-    .getHighights()
-    .then(result => result.forEach(i => highlihgtRange(i.range)));
-}
+// function restoreHighlights() {
+//   page
+//     .getHighights()
+//     .then(result => result.forEach(i => highlihgtRange(i.range)));
+// }
 // page.getHighights(window.location.href).then(result => console.log(result));
 
 function togglePenEnableFactory() {
