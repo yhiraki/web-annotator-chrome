@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import { serializeRange, parseRange } from '../util/range';
+import { serializeRange } from '../util/range';
 import storage from '../api/storage';
 
 Vue.use(Vuex);
@@ -31,28 +31,31 @@ const highlights = {
     highlights: []
   },
   getters: {
-    allHighlights: state => state.highlights,
-    serializedHighlights: state =>
-      state.highlights.map(i => ({
-        id: i.id,
-        range: serializeRange(i.range),
-        text: i.text
-      }))
+    allHighlights: state => state.highlights
   },
   mutations: {
     pushHighlight: (state, highlight) => state.highlights.push(highlight),
+    replaceHighlights: (state, highlights) => (state.highlights = highlights),
     uniqueHighlights: state =>
       (state.highlights = state.highlights.filter(
         (x, i, self) => self.indexOf(x) === i
       ))
   },
   actions: {
-    addHighlight: ({ commit }, highlight) => {
-      commit('pushHighlight', highlight);
-      commit('uniqueHighlights');
+    addHighlight: ({ commit, getters }, range) => {
+      commit('pushHighlight', {
+        id: getters.allHighlights.length,
+        text: range.cloneContents().textContent.trim(),
+        range: serializeRange(range)
+      });
     },
     saveHighlights: ({ getters }) =>
-      storage.save('highlihgts', JSON.stringify(getters.serializedHighlights))
+      storage.save('highlihgts', JSON.stringify(getters.allHighlights)),
+    loadHighlights: async ({ commit }) => {
+      const highlights = await storage.load('highlihgts');
+      commit('replaceHighlights', highlights);
+      return highlights;
+    }
   }
 };
 

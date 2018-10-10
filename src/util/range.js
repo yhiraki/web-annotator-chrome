@@ -26,4 +26,13 @@ function parseRange(json) {
   return range;
 }
 
-export { serializeRange, parseRange };
+function isRangeEqual(range1, range2) {
+  return (
+    range1.startOffset === range2.startOffset &&
+    range1.startContainer === range2.startContainer &&
+    range1.endOffset === range2.endOffset &&
+    range1.endContainer === range2.endContainer
+  );
+}
+
+export { serializeRange, parseRange, isRangeEqual };
