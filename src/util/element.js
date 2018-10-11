@@ -53,7 +53,7 @@ function searchCommonParentUp(targetNode, currentNode) {
   } else {
     return searchCommonParentUp(targetNode, currentNode.parentElement);
   }
-  throw Error();
+  throw new Error();
 }
 
 function getCommonParent(node1, node2) {

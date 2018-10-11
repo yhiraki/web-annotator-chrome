@@ -15,14 +15,13 @@ function serializeRange(range) {
 function parseRange(json) {
   const rangeParam = JSON.parse(json);
   const range = document.createRange();
-  range.setStart(
-    getElementsByXPath(rangeParam.startXPath)[0],
-    rangeParam.startOffset
-  );
-  range.setEnd(
-    getElementsByXPath(rangeParam.endXPath)[0],
-    rangeParam.endOffset
-  );
+  const startElements = getElementsByXPath(rangeParam.startXPath);
+  const endElements = getElementsByXPath(rangeParam.endXPath);
+  if (startElements.length < 1 && endElements.length < 1) {
+    return range;
+  }
+  range.setStart(startElements[0], rangeParam.startOffset);
+  range.setEnd(endElements[0], rangeParam.endOffset);
   return range;
 }
 

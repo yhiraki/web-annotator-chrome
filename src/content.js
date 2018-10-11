@@ -52,7 +52,9 @@ function restoreHighlights() {
     console.log(result);
     result.forEach(i => {
       const range = parseRange(i.range);
-      highlihgtRange(range);
+      if (!range.collapsed) {
+        highlihgtRange(range);
+      }
     });
   });
 }
