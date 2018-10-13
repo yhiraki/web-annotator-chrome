@@ -1,7 +1,7 @@
 {
-  "name": "Getting Started Example",
-  "version": "1.0",
-  "description": "Build an Extension!",
+  "name": "Web annotation tool",
+  "version": "0.1.0",
+  "description": "Web annotation tool",
   "permissions": ["activeTab", "declarativeContent", "storage"],
   "background": {
     "scripts": ["background.js"],

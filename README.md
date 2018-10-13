@@ -1,1 +1,1 @@
-https://developer.chrome.com/extensions/overview
+Web annotation tool
