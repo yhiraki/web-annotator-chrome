@@ -59,27 +59,22 @@ function restoreHighlights() {
   });
 }
 
-function togglePenEnableFactory() {
-  let penEnabled = false;
-  return function togglePenEnable() {
-    if (penEnabled) {
-      window.removeEventListener('mouseup', penDown);
-      penEnabled = false;
-    } else {
-      window.addEventListener('mouseup', penDown);
-      penEnabled = true;
-    }
-  };
-}
-
-const togglePenEnable = togglePenEnableFactory();
-
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request == 'togglePen') {
-    togglePenEnable();
+  console.log(request);
+  if (request == 'enablePen') {
+    window.addEventListener('mouseup', penDown);
+  }
+  if (request == 'disablePen') {
+    window.removeEventListener('mouseup', penDown);
   }
 });
 
 window.addEventListener('load', restoreHighlights);
+
+chrome.storage.sync.get('enabled', function(data) {
+  if (data.enabled) {
+    window.addEventListener('mouseup', penDown);
+  }
+});
 
 console.log('load done');

@@ -1,45 +1,50 @@
-const path = require("path");
-const webpack = require("webpack");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-const dist = path.resolve(__dirname, "dist");
-const src = path.resolve(__dirname, "src");
+const dist = path.resolve(__dirname, 'dist');
+const src = path.resolve(__dirname, 'src');
 
 module.exports = {
   optimization: {
     minimize: false
   },
-  target: "web",
+  // resolve: {
+  //   alias: {
+  //     vue$: 'vue/dist/vue.esm.js' // 'vue/dist/vue.common.js' webpack 1 用
+  //   }
+  // },
+  target: 'web',
   entry: {
-    content: path.join(src, "content.js"),
-    background: path.join(src, "background.js"),
-    options: path.join(src, "options.js"),
-    popup: path.join(src, "popup.js")
+    content: path.join(src, 'content.js'),
+    background: path.join(src, 'background.js'),
+    options: path.join(src, 'options.js'),
+    popup: path.join(src, 'popup.js')
   },
   output: {
-    filename: "[name].js",
+    filename: '[name].js',
     path: dist
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "src/options.html",
-      filename: "options.html",
-      chunks: ["options"]
+      template: 'src/options.html',
+      filename: 'options.html',
+      chunks: ['options']
     }),
     new HtmlWebpackPlugin({
-      template: "src/popup.html",
-      filename: "popup.html",
-      chunks: ["popup"]
+      template: 'src/popup.html',
+      filename: 'popup.html',
+      chunks: ['popup']
     }),
     new CopyWebpackPlugin([
       {
-        from: "./src/manifest.json",
+        from: './src/manifest.json',
         to: dist
       },
       {
-        from: "./src/images",
-        to: path.join(dist, "images")
+        from: './src/images',
+        to: path.join(dist, 'images')
       }
     ])
   ]
