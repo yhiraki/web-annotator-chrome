@@ -1,6 +1,8 @@
 import store from './store/index';
+
 import { parseRange } from './util/range';
 import { setAttributeToTextNodeForRange } from './util/element';
+import Vue from 'vue';
 
 function isHighlighted(range) {
   const contents = range.cloneContents();
@@ -70,6 +72,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 window.addEventListener('load', restoreHighlights);
+window.addEventListener('load', function() {
+  let el = document.createElement('div');
+  el.setAttribute('id', 'hogeapp');
+  el.innerHTML = ' <input v-model="a"> {{a}} <br/> {{highlights}}';
+  document.body.appendChild(el);
+  new Vue({
+    el: '#hogeapp',
+    store,
+    data: { a: 'hoge' },
+    computed: {
+      highlights() {
+        return store.getters.allHighlights.map(i => i.id);
+      }
+    }
+  });
+});
 
 chrome.storage.sync.get('enabled', function(data) {
   if (data.enabled) {
