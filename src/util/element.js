@@ -1,16 +1,33 @@
+const xpath = require('xpath');
 function getElementsByXPath(expression, parentElement) {
-  const r = [];
-  const x = document.evaluate(
-    expression,
-    parentElement || document,
-    null,
-    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-    null
-  );
-  for (let i = 0, l = x.snapshotLength; i < l; i++) {
-    r.push(x.snapshotItem(i));
+  return xpath.select(expression, parentElement);
+}
+
+function getXpath(e) {
+  if (e.nodeType == 9) {
+    return '';
   }
-  return r;
+  if (e.hasAttribute('id')) {
+    return 'id("' + e.getAttribute('id') + '")';
+  }
+  var p = e.parentNode;
+  var t = getXpath(p) + '/' + e.tagName.toLowerCase();
+  var c = p.childNodes;
+  var g = 0;
+  var s;
+  for (var i = 0, n = c.length; i < n; ++i) {
+    if (c[i].nodeName == e.nodeName && c[i].nodeType == e.nodeType) {
+      ++g;
+      if (c[i] == e) {
+        s = g;
+      }
+    }
+  }
+  if (g == 1) {
+    return t;
+  }
+  t += '[' + s + ']';
+  return t;
 }
 
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
@@ -41,7 +58,7 @@ function getXPathFromElement(element) {
 }
 
 function isElement(obj) {
-  return obj && obj.nodeType && obj.nodeType === 1;
+  return Boolean(obj && obj.nodeType && obj.nodeType === 1);
 }
 
 function searchCommonParentUp(targetNode, currentNode) {
@@ -119,7 +136,9 @@ function setAttributeToTextNodeForRange(range, attrs) {
 }
 
 export {
+  isElement,
   getElementsByXPath,
+  getXpath,
   getXPathFromElement,
   setAttributeToTextNodeForRange
 };
