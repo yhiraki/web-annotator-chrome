@@ -32,13 +32,27 @@ describe('Test getXpath and getElementsByXPath', () => {
 `);
   });
 
-  test('getElement //span', () => {
-    const el = doc.getElementsByTagName('span')[0];
-    expect(getElementsByXPath('//span', doc)[0]).toBe(el);
+  describe('element <span> which has no attribute', () => {
+    test('get element', () => {
+      const el = doc.getElementsByTagName('span')[0];
+      expect(getElementsByXPath('//span', doc)[0]).toBe(el);
+    });
+
+    test('get xpath', () => {
+      const el = doc.getElementsByTagName('span')[0];
+      expect(getXpath(el)).toBe('/div/span');
+    });
   });
 
-  test('getXpath //span', () => {
-    const el = doc.getElementsByTagName('span')[0];
-    expect(getXpath(el)).toBe('/div/span');
+  describe('element <button> which has id', () => {
+    test('get element', () => {
+      const el = doc.getElementById('button');
+      expect(getElementsByXPath('id("button")', doc)[0]).toBe(el);
+    });
+
+    test('get xpath', () => {
+      const el = doc.getElementById('button');
+      expect(getXpath(el)).toBe('id("button")');
+    });
   });
 });
