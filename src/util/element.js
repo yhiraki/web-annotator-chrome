@@ -1,10 +1,11 @@
-const xpath = require('xpath');
+import xpath from 'xpath';
+
 function getElementsByXPath(expression, parentElement) {
   return xpath.select(expression, parentElement);
 }
 
 function getXpath(e) {
-  if (e.nodeType == 9) {
+  if (e.nodeType == e.DOCUMENT_NODE) {
     return '';
   }
   if (e.hasAttribute('id')) {
@@ -135,10 +136,43 @@ function setAttributeToTextNodeForRange(range, attrs) {
   window.getSelection().removeAllRanges();
 }
 
+function decorateTextNode(textNode, attrs, options = {}) {
+  const wrapper = document.createDocumentFragment();
+  const rawText = textNode.textContent;
+
+  options.startOffset = options.startOffset || 0;
+  options.endOffset = options.endOffset || rawText.length;
+  if (options.startOffset > 0) {
+    wrapper.appendChild(
+      document.createTextNode(rawText.slice(0, options.startOffset))
+    );
+  }
+  const span = document.createElement('span');
+  Object.keys(attrs).forEach(key => {
+    span.setAttribute(key, attrs[key]);
+  });
+  span.appendChild(
+    document.createTextNode(
+      rawText.slice(options.startOffset, options.endOffset)
+    )
+  );
+  wrapper.appendChild(span);
+  if (options.endOffset < rawText.length) {
+    wrapper.appendChild(
+      document.createTextNode(rawText.slice(options.endOffset))
+    );
+  }
+  return wrapper;
+}
+
+function decorateElementTextNode(element, attrs, options) {}
+
 export {
   isElement,
   getElementsByXPath,
   getXpath,
   getXPathFromElement,
-  setAttributeToTextNodeForRange
+  setAttributeToTextNodeForRange,
+  decorateTextNode,
+  decorateElementTextNode
 };
