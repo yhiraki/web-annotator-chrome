@@ -110,3 +110,61 @@ describe('replace text node to decorated', () => {
     });
   });
 });
+
+describe('replace element node to decorated', () => {
+  const { decorateTextNode, decorateElementTextNode } = elementjs;
+
+  describe('plain text node', () => {
+    let el;
+    beforeEach(() => {
+      document.body.innerHTML = `\
+<div>
+  <span id="a">
+    Adipiscing elit pellentesque habitant morbi tristique senectus et netus et.
+    Tortor,
+    <span id="b">
+    hoge fuga piyo
+    </span>
+    at auctor urna nunc id cursus metus aliquam eleifend mi in nulla
+    posuere sollicitudin aliquam ultrices sagittis orci, a!
+  </span>
+</div>
+`;
+    });
+
+    test('the func bangs object', () => {
+      const e = document.getElementById('b');
+      const attrs = { class: 'hoge' };
+      expect(decorateElementTextNode(e, attrs)).toBe(e);
+    });
+
+    test('not nested', () => {
+      const e = document.getElementById('b');
+      const e2 = e.cloneNode(true);
+      const attrs = { class: 'hoge' };
+      const span = document.createElement('span');
+      span.appendChild(e.childNodes[0].cloneNode());
+      span.setAttribute('class', 'hoge');
+      e.replaceChild(span, e.childNodes[0]);
+      expect(decorateElementTextNode(e2, attrs)).toEqual(e);
+    });
+
+    test('nested', () => {
+      const e = document.getElementById('a');
+      const e2 = e.cloneNode(true);
+      const attrs = { class: 'hoge' };
+      const span = document.createElement('span');
+      span.setAttribute('class', 'hoge');
+      const span0 = span.cloneNode();
+      span0.appendChild(e.childNodes[0].cloneNode());
+      const span1 = span.cloneNode();
+      span1.appendChild(e.childNodes[1].childNodes[0].cloneNode());
+      const span2 = span.cloneNode();
+      span2.appendChild(e.childNodes[2].cloneNode());
+      e.replaceChild(span0, e.childNodes[0]);
+      e.childNodes[1].replaceChild(span1, e.childNodes[1].childNodes[0]);
+      e.replaceChild(span2, e.childNodes[2]);
+      expect(decorateElementTextNode(e2, attrs)).toEqual(e);
+    });
+  });
+});
