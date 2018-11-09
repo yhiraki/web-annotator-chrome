@@ -139,33 +139,47 @@ function setAttributeToTextNodeForRange(range, attrs) {
 function decorateTextNode(textNode, attrs, options = {}) {
   const wrapper = document.createDocumentFragment();
   const rawText = textNode.textContent;
+  const startOffset = options.startOffset || 0;
+  const endOffset = options.endOffset || rawText.length;
 
-  options.startOffset = options.startOffset || 0;
-  options.endOffset = options.endOffset || rawText.length;
-  if (options.startOffset > 0) {
-    wrapper.appendChild(
-      document.createTextNode(rawText.slice(0, options.startOffset))
-    );
+  if (startOffset > 0) {
+    wrapper.appendChild(document.createTextNode(rawText.slice(0, startOffset)));
   }
   const span = document.createElement('span');
   Object.keys(attrs).forEach(key => {
     span.setAttribute(key, attrs[key]);
   });
   span.appendChild(
-    document.createTextNode(
-      rawText.slice(options.startOffset, options.endOffset)
-    )
+    document.createTextNode(rawText.slice(startOffset, endOffset))
   );
   wrapper.appendChild(span);
-  if (options.endOffset < rawText.length) {
-    wrapper.appendChild(
-      document.createTextNode(rawText.slice(options.endOffset))
-    );
+  if (endOffset < rawText.length) {
+    wrapper.appendChild(document.createTextNode(rawText.slice(endOffset)));
   }
   return wrapper;
 }
 
-function decorateElementTextNode(element, attrs, options) {}
+function decorateElementTextNode(element, attrs, options = {}) {
+  function _wrapper(el, attrs) {
+    for (let node of el.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const n = document.createElement('span');
+        n.setAttribute('class', 'hoge');
+        n.appendChild(node.cloneNode());
+        el.replaceChild(
+          decorateTextNode(node.cloneNode(), attrs, options),
+          node
+        );
+        continue;
+      }
+      if (node.hasChildNodes()) {
+        _wrapper(node, attrs, options);
+      }
+    }
+    return el;
+  }
+  return _wrapper(element, attrs);
+}
 
 export {
   isElement,
