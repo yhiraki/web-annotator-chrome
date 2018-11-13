@@ -149,6 +149,29 @@ describe('replace element node to decorated', () => {
       expect(decorateElementTextNode(e2, attrs)).toEqual(e);
     });
 
+    test('not nested, with offset', () => {
+      const e = document.getElementById('b');
+      const e2 = e.cloneNode(true);
+      const text = e.childNodes[0].textContent;
+      const soffset = 10;
+      const eoffset = 15;
+      const attrs = { class: 'hoge' };
+      const span = document.createElement('span');
+      const fragment = document.createDocumentFragment();
+      span.setAttribute('class', 'hoge');
+      span.appendChild(document.createTextNode(text.slice(soffset, eoffset)));
+      fragment.appendChild(document.createTextNode(text.slice(0, soffset)));
+      fragment.appendChild(span);
+      fragment.appendChild(document.createTextNode(text.slice(eoffset)));
+      e.replaceChild(fragment, e.childNodes[0]);
+      expect(
+        decorateElementTextNode(e2, attrs, {
+          startTextOffset: soffset,
+          endTextOffset: eoffset
+        })
+      ).toEqual(e);
+    });
+
     test('nested', () => {
       const e = document.getElementById('a');
       const e2 = e.cloneNode(true);

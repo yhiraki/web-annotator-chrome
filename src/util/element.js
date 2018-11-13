@@ -160,25 +160,35 @@ function decorateTextNode(textNode, attrs, options = {}) {
 }
 
 function decorateElementTextNode(element, attrs, options = {}) {
-  function _wrapper(el, attrs) {
-    for (let node of el.childNodes) {
+  function _wrapper(el, attrs, options = {}) {
+    const doList = [];
+    for (const [i, node] of el.childNodes.entries()) {
+      const opt = {};
+      if (options.startTextOffset && i === 0) {
+        opt.startOffset = options.startTextOffset;
+      }
+      if (options.endTextOffset && i + 1 === el.childNodes.length) {
+        opt.endOffset = options.endTextOffset;
+      }
       if (node.nodeType === Node.TEXT_NODE) {
         const n = document.createElement('span');
         n.setAttribute('class', 'hoge');
         n.appendChild(node.cloneNode());
-        el.replaceChild(
-          decorateTextNode(node.cloneNode(), attrs, options),
-          node
-        );
+        doList.push(function() {
+          el.replaceChild(decorateTextNode(node.cloneNode(), attrs, opt), node);
+        });
         continue;
       }
       if (node.hasChildNodes()) {
         _wrapper(node, attrs, options);
       }
     }
+    for (const d of doList) {
+      d();
+    }
     return el;
   }
-  return _wrapper(element, attrs);
+  return _wrapper(element, attrs, options);
 }
 
 export {
