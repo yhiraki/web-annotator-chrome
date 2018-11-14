@@ -161,34 +161,38 @@ function decorateTextNode(textNode, attrs, options = {}) {
 
 function decorateElementTextNode(element, attrs, options = {}) {
   function _wrapper(el, attrs, options = {}) {
-    const doList = [];
+    let doList = [];
     for (const [i, node] of el.childNodes.entries()) {
-      const opt = {};
-      if (options.startTextOffset && i === 0) {
-        opt.startOffset = options.startTextOffset;
-      }
-      if (options.endTextOffset && i + 1 === el.childNodes.length) {
-        opt.endOffset = options.endTextOffset;
-      }
       if (node.nodeType === Node.TEXT_NODE) {
         const n = document.createElement('span');
-        n.setAttribute('class', 'hoge');
+        n.setAttribute('class', 'Hodge');
         n.appendChild(node.cloneNode());
-        doList.push(function() {
+        doList.push(function(opt) {
           el.replaceChild(decorateTextNode(node.cloneNode(), attrs, opt), node);
         });
         continue;
       }
       if (node.hasChildNodes()) {
-        _wrapper(node, attrs, options);
+        doList = doList.concat(_wrapper(node, attrs, options));
       }
     }
-    for (const d of doList) {
-      d();
-    }
-    return el;
+    return doList;
   }
-  return _wrapper(element, attrs, options);
+  const doList = _wrapper(element, attrs, options);
+  const opts = [];
+  for (const [i, d] of doList.entries()) {
+    const opt = {};
+    if (options.startTextOffset && i === 0) {
+      opt.startOffset = options.startTextOffset;
+    }
+    if (options.endTextOffset && i === doList.length - 1) {
+      opt.endOffset = options.endTextOffset;
+    }
+    opts.push(opt);
+    d(opt);
+  }
+  console.log(opts);
+  return element;
 }
 
 export {

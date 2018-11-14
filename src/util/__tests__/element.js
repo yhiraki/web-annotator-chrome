@@ -189,5 +189,41 @@ describe('replace element node to decorated', () => {
       e.replaceChild(span2, e.childNodes[2]);
       expect(decorateElementTextNode(e2, attrs)).toEqual(e);
     });
+
+    test('nested, with offset', () => {
+      const e = document.getElementById('a');
+      const e2 = e.cloneNode(true);
+      const soffset = 10;
+      const eoffset = 15;
+      const attrs = { class: 'hoge' };
+      const span = document.createElement('span');
+      span.setAttribute('class', 'hoge');
+      const span0 = span.cloneNode();
+      const fragment0 = document.createDocumentFragment();
+      const node0 = e.childNodes[0];
+      const text0 = node0.textContent;
+      span0.appendChild(document.createTextNode(text0.slice(soffset)));
+      fragment0.appendChild(document.createTextNode(text0.slice(0, soffset)));
+      fragment0.appendChild(span0);
+      const span1 = span.cloneNode();
+      const node1 = e.childNodes[1].childNodes[0];
+      span1.appendChild(node1.cloneNode());
+      const span2 = span.cloneNode();
+      const fragment2 = document.createDocumentFragment();
+      const node2 = e.childNodes[2];
+      const text2 = node2.textContent;
+      span2.appendChild(document.createTextNode(text2.slice(0, eoffset)));
+      fragment2.appendChild(span2);
+      fragment2.appendChild(document.createTextNode(text2.slice(eoffset)));
+      e.childNodes[1].replaceChild(span1, node1);
+      e.replaceChild(fragment0, node0);
+      e.replaceChild(fragment2, node2);
+      expect(
+        decorateElementTextNode(e2, attrs, {
+          startTextOffset: soffset,
+          endTextOffset: eoffset
+        })
+      ).toEqual(e);
+    });
   });
 });
