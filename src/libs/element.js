@@ -191,7 +191,6 @@ function decorateElementTextNode(element, attrs, options = {}) {
     opts.push(opt);
     d(opt);
   }
-  console.log(opts);
   return element;
 }
 
