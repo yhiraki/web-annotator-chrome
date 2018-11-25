@@ -160,25 +160,62 @@ function decorateTextNode(textNode, attrs, options = {}) {
 }
 
 function decorateElementTextNode(element, attrs, options = {}) {
-  function _wrapper(el, attrs, options = {}) {
-    let doList = [];
-    for (const [i, node] of el.childNodes.entries()) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const n = document.createElement('span');
-        n.setAttribute('class', 'Hodge');
-        n.appendChild(node.cloneNode());
-        doList.push(function(opt) {
-          el.replaceChild(decorateTextNode(node.cloneNode(), attrs, opt), node);
-        });
-        continue;
-      }
-      if (node.hasChildNodes()) {
-        doList = doList.concat(_wrapper(node, attrs, options));
-      }
+  let doList = [];
+  for (const node of elementGen(element)) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const n = document.createElement('span');
+      n.setAttribute('class', 'hoge');
+      n.appendChild(node.cloneNode());
+      doList.push(function(opt) {
+        node.parentElement.replaceChild(
+          decorateTextNode(node.cloneNode(), attrs, opt),
+          node
+        );
+      });
     }
-    return doList;
   }
-  const doList = _wrapper(element, attrs, options);
+  const opts = [];
+  for (const [i, d] of doList.entries()) {
+    const opt = {};
+    if (options.startTextOffset && i === 0) {
+      opt.startOffset = options.startTextOffset;
+    }
+    if (options.endTextOffset && i === doList.length - 1) {
+      opt.endOffset = options.endTextOffset;
+    }
+    opts.push(opt);
+    d(opt);
+  }
+  return element;
+}
+
+function* elementGen(element) {
+  yield element;
+  for (const e of element.childNodes) {
+    if (e.hasChildNodes()) {
+      yield* elementGen(e);
+    } else {
+      yield e;
+    }
+  }
+}
+
+function decorateRange(range, attrs, options = {}) {
+  let doList = [];
+  const element = range.commonAncestorContainer;
+  for (const node of elementGen(element)) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const n = document.createElement('span');
+      n.setAttribute('class', 'hoge');
+      n.appendChild(node.cloneNode());
+      doList.push(function(opt) {
+        node.parentElement.replaceChild(
+          decorateTextNode(node.cloneNode(), attrs, opt),
+          node
+        );
+      });
+    }
+  }
   const opts = [];
   for (const [i, d] of doList.entries()) {
     const opt = {};
@@ -196,10 +233,12 @@ function decorateElementTextNode(element, attrs, options = {}) {
 
 export {
   isElement,
+  elementGen,
   getElementsByXPath,
   getXpath,
   getXPathFromElement,
   setAttributeToTextNodeForRange,
   decorateTextNode,
-  decorateElementTextNode
+  decorateElementTextNode,
+  decorateRange
 };
