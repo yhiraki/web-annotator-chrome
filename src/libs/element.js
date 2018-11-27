@@ -159,51 +159,75 @@ function decorateTextNode(textNode, attrs, options = {}) {
   return wrapper;
 }
 
-function decorateElementTextNode(element, attrs, options = {}) {
-  let doList = [];
-  for (const node of elementGen(element)) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const n = document.createElement('span');
-      n.setAttribute('class', 'hoge');
-      n.appendChild(node.cloneNode());
-      doList.push(function(opt) {
-        node.parentElement.replaceChild(
-          decorateTextNode(node.cloneNode(), attrs, opt),
-          node
-        );
-      });
-    }
-  }
-  const opts = [];
-  for (const [i, d] of doList.entries()) {
-    const opt = {};
-    if (options.startTextOffset && i === 0) {
-      opt.startOffset = options.startTextOffset;
-    }
-    if (options.endTextOffset && i === doList.length - 1) {
-      opt.endOffset = options.endTextOffset;
-    }
-    opts.push(opt);
-    d(opt);
-  }
-  return element;
-}
-
 function* elementGen(element) {
   yield element;
   for (const e of element.childNodes) {
     if (e.hasChildNodes()) {
       yield* elementGen(e);
-    } else {
-      yield e;
+    }
+  }
+}
+
+function extractChildTextNodes(element) {
+  const list = [];
+  for (const n of element.childNodes) {
+    if (n.nodeType === n.TEXT_NODE) {
+      list.push(n);
+    }
+  }
+  return list;
+}
+
+function* rangeGen(range) {
+  let inRange = false;
+  let sc, ec;
+  if (range.startContainer.nodeType === Node.ELEMENT_NODE) {
+    sc = range.startContainer;
+  } else {
+    sc = range.startContainer.parentElement;
+  }
+  if (range.endContainer.nodeType === Node.ELEMENT_NODE) {
+    ec = range.endContainer;
+  } else {
+    ec = range.endContainer.parentElement;
+  }
+  if (sc === ec) {
+    yield* elementGen(range.commonAncestorContainer);
+    return;
+  }
+  for (const e of elementGen(range.commonAncestorContainer)) {
+    if (e === sc) {
+      inRange = true;
+    }
+    if (!inRange) {
+      continue;
+    }
+    yield e;
+    if (e === ec) {
+      inRange = false;
     }
   }
 }
 
 function decorateRange(range, attrs, options = {}) {
   let doList = [];
+  let inRange = false;
+  let inEndContainer = false;
   const element = range.commonAncestorContainer;
   for (const node of elementGen(element)) {
+    if (node === range.startConrainer) {
+      inRange = true;
+    }
+    if (inEndContainer && node.parentElement !== range.endContainer) {
+      inRange = false;
+      inEndContainer = false;
+    }
+    if (node.parentElement === range.endContainer) {
+      inEndContainer = true;
+    }
+    if (!inRange) {
+      continue;
+    }
     if (node.nodeType === Node.TEXT_NODE) {
       const n = document.createElement('span');
       n.setAttribute('class', 'hoge');
@@ -228,17 +252,17 @@ function decorateRange(range, attrs, options = {}) {
     opts.push(opt);
     d(opt);
   }
-  return element;
+  return range;
 }
 
 export {
   isElement,
   elementGen,
+  rangeGen,
   getElementsByXPath,
   getXpath,
   getXPathFromElement,
   setAttributeToTextNodeForRange,
   decorateTextNode,
-  decorateElementTextNode,
   decorateRange
 };
