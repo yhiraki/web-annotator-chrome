@@ -180,22 +180,20 @@ function extractChildTextNodes(element) {
 
 function* rangeGen(range) {
   let inRange = false;
-  let sc, ec;
-  if (range.startContainer.nodeType === Node.ELEMENT_NODE) {
-    sc = range.startContainer;
-  } else {
-    sc = range.startContainer.parentElement;
+  let sc = range.startContainer;
+  let ec = range.endContainer;
+  let cc = range.commonAncestorContainer;
+  if (sc.nodeType !== Node.ELEMENT_NODE) {
+    sc = sc.parentElement;
   }
-  if (range.endContainer.nodeType === Node.ELEMENT_NODE) {
-    ec = range.endContainer;
-  } else {
-    ec = range.endContainer.parentElement;
+  if (ec.nodeType !== Node.ELEMENT_NODE) {
+    ec = ec.parentElement;
   }
   if (sc === ec) {
-    yield* elementGen(range.commonAncestorContainer);
+    yield* elementGen(cc);
     return;
   }
-  for (const e of elementGen(range.commonAncestorContainer)) {
+  for (const e of elementGen(cc)) {
     if (e === sc) {
       inRange = true;
     }
@@ -211,36 +209,27 @@ function* rangeGen(range) {
 
 function decorateRange(range, attrs, options = {}) {
   let doList = [];
-  let inRange = false;
-  let inEndContainer = false;
-  const element = range.commonAncestorContainer;
-  for (const node of elementGen(element)) {
-    if (node === range.startConrainer) {
-      inRange = true;
-    }
-    if (inEndContainer && node.parentElement !== range.endContainer) {
-      inRange = false;
-      inEndContainer = false;
-    }
-    if (node.parentElement === range.endContainer) {
-      inEndContainer = true;
-    }
-    if (!inRange) {
-      continue;
-    }
-    if (node.nodeType === Node.TEXT_NODE) {
-      const n = document.createElement('span');
-      n.setAttribute('class', 'hoge');
-      n.appendChild(node.cloneNode());
+  for (const el of rangeGen(range)) {
+    if (el.nodeType === Node.TEXT_NODE) {
       doList.push(function(opt) {
-        node.parentElement.replaceChild(
-          decorateTextNode(node.cloneNode(), attrs, opt),
-          node
+        el.parentElement.replaceChild(
+          decorateTextNode(el.cloneNode(), attrs, opt),
+          el
         );
       });
+      continue;
+    }
+    for (const node of el.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        doList.push(function(opt) {
+          node.parentElement.replaceChild(
+            decorateTextNode(node.cloneNode(), attrs, opt),
+            node
+          );
+        });
+      }
     }
   }
-  const opts = [];
   for (const [i, d] of doList.entries()) {
     const opt = {};
     if (options.startTextOffset && i === 0) {
@@ -249,7 +238,6 @@ function decorateRange(range, attrs, options = {}) {
     if (options.endTextOffset && i === doList.length - 1) {
       opt.endOffset = options.endTextOffset;
     }
-    opts.push(opt);
     d(opt);
   }
   return range;

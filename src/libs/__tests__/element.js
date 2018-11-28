@@ -232,7 +232,7 @@ describe('decorate range', () => {
 `;
   });
 
-  test('not nested', () => {
+  test('element not nested', () => {
     const e = document.getElementById('b');
     const e2 = e.cloneNode(true);
     const attrs = { class: 'hoge' };
@@ -240,17 +240,15 @@ describe('decorate range', () => {
     span.appendChild(e.childNodes[0].cloneNode());
     span.setAttribute('class', 'hoge');
     e.replaceChild(span, e.childNodes[0]);
-    const range = document.createRange();
-    range.setStart(e2, 0);
-    range.setEnd(e2, 1);
-    expect(range).toEqual({});
-    expect(range.startConrainer).toEqual(e2);
-    expect(range.endContainer).toEqual(e2);
-    expect(range.commonAncestorContainer).toEqual(e2);
-    // expect(decorateRange(range, attrs).commonAncestorContainer).toEqual(e);
+    const range = {
+      startContainer: e2,
+      endContainer: e2,
+      commonAncestorContainer: e2
+    };
+    expect(decorateRange(range, attrs).commonAncestorContainer).toEqual(e);
   });
 
-  test('not nested, with offset', () => {
+  test('textNode not nested, with offset', () => {
     const e = document.getElementById('b');
     const e2 = e.cloneNode(true);
     const text = e.childNodes[0].textContent;
@@ -266,16 +264,18 @@ describe('decorate range', () => {
     fragment.appendChild(document.createTextNode(text.slice(eoffset)));
     e.replaceChild(fragment, e.childNodes[0]);
     const range = {
-      startConrainer: e2.childNodes[0],
+      startContainer: e2.childNodes[0],
       endContainer: e2.childNodes[0],
-      commonAncestorContainer: e2
+      commonAncestorContainer: e2.childNodes[0]
     };
-    expect(
-      decorateRange(range, attrs, {
-        startTextOffset: soffset,
-        endTextOffset: eoffset
-      }).commonAncestorContainer
-    ).toEqual(e);
+    decorateRange(range, attrs, {
+      startTextOffset: soffset,
+      endTextOffset: eoffset
+    });
+    const { rangeGen } = elementjs;
+    const gen = rangeGen(range);
+    // expect(gen.next()).toEqual('a');
+    expect(e2).toEqual(e);
   });
 
   test('nested', () => {
@@ -294,7 +294,7 @@ describe('decorate range', () => {
     e.childNodes[1].replaceChild(span1, e.childNodes[1].childNodes[0]);
     e.replaceChild(span2, e.childNodes[2]);
     const range = {
-      startConrainer: e2,
+      startContainer: e2,
       endContainer: e2,
       commonAncestorContainer: e2
     };
@@ -330,7 +330,7 @@ describe('decorate range', () => {
     e.replaceChild(fragment0, node0);
     e.replaceChild(fragment2, node2);
     const range = {
-      startConrainer: e2,
+      startContainer: e2,
       endContainer: e2,
       commonAncestorContainer: e2
     };
@@ -347,7 +347,7 @@ describe('decorate range', () => {
     const spanB = document.getElementById('b');
     const commonAncestorContainer = spanA.cloneNode(true);
     const range = {
-      startConrainer: commonAncestorContainer,
+      startContainer: commonAncestorContainer,
       startOffset: 0,
       endContainer: commonAncestorContainer.childNodes[1],
       endOffset: 1,
