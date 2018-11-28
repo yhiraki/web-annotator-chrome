@@ -194,51 +194,36 @@ function* rangeGen(range) {
   let sc = range.startContainer;
   let ec = range.endContainer;
   let cc = range.commonAncestorContainer;
-  if (sc.nodeType !== Node.ELEMENT_NODE) {
-    sc = sc.parentElement;
-  }
-  if (ec.nodeType !== Node.ELEMENT_NODE) {
-    ec = ec.parentElement;
-  }
   if (sc === ec) {
-    yield* elementGen(cc);
+    yield* nodeGen(cc);
     return;
   }
-  for (const e of elementGen(cc)) {
+  for (const e of nodeGen(cc)) {
     if (e === sc) {
       inRange = true;
     }
     if (!inRange) {
       continue;
     }
-    yield e;
     if (e === ec) {
+      yield* nodeGen(e);
       inRange = false;
+      break;
     }
+    yield e;
   }
 }
 
 function decorateRange(range, attrs, options = {}) {
   let doList = [];
-  for (const el of rangeGen(range)) {
-    if (el.nodeType === Node.TEXT_NODE) {
+  for (const node of rangeGen(range)) {
+    if (node.nodeType === Node.TEXT_NODE) {
       doList.push(function(opt) {
-        el.parentElement.replaceChild(
-          decorateTextNode(el.cloneNode(), attrs, opt),
-          el
+        node.parentElement.replaceChild(
+          decorateTextNode(node.cloneNode(), attrs, opt),
+          node
         );
       });
-      continue;
-    }
-    for (const node of el.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        doList.push(function(opt) {
-          node.parentElement.replaceChild(
-            decorateTextNode(node.cloneNode(), attrs, opt),
-            node
-          );
-        });
-      }
     }
   }
   for (const [i, d] of doList.entries()) {

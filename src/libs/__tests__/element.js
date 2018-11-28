@@ -189,7 +189,7 @@ describe('node generator', () => {
   });
 });
 
-describe('range element generator', () => {
+describe('range node generator', () => {
   const { rangeGen } = elementjs;
 
   beforeEach(() => {
@@ -220,22 +220,46 @@ describe('range element generator', () => {
     };
     const gen = rangeGen(range);
     expect(gen.next().value.id).toBe('b');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE);
+    expect(gen.next().done).toBe(true);
+  });
+
+  test('Nested element', () => {
+    const e = document.getElementsByTagName('div')[0];
+    const range = {
+      startContainer: e,
+      endContainer: e,
+      commonAncestorContainer: e
+    };
+    const gen = rangeGen(range);
+    expect(gen.next().value.tagName).toBe('DIV');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // div
+    expect(gen.next().value.id).toBe('a');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
+    expect(gen.next().value.id).toBe('b');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#b
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
+    expect(gen.next().value.id).toBe('c');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#c
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // div
     expect(gen.next().done).toBe(true);
   });
 
   test('from text node to text node', () => {
     const common = document.getElementById('a');
-    const sc = document.getElementById('a').childNodes[0];
-    const ec = document.getElementById('a').childNodes[2];
+    const sc = common.childNodes[0];
+    const ec = common.childNodes[2];
     const range = {
       startContainer: sc,
       endContainer: ec,
       commonAncestorContainer: common
     };
     const gen = rangeGen(range);
-    expect(gen.next().value.id).toBe('a');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
     expect(gen.next().value.id).toBe('b');
-    expect(gen.next().value.id).toBe('c');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#b
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
     expect(gen.next().done).toBe(true);
   });
 
@@ -250,7 +274,10 @@ describe('range element generator', () => {
     };
     const gen = rangeGen(range);
     expect(gen.next().value.id).toBe('b');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#b
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
     expect(gen.next().value.id).toBe('c');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#c
     expect(gen.next().done).toBe(true);
   });
 });
@@ -405,3 +432,155 @@ describe('decorate range', () => {
     expect(decorateRange(range, attrs).commonAncestorContainer).toEqual(spanA);
   });
 });
+
+// describe('decorate range2', () => {
+//   const { decorateRange2, decorateTextNode } = elementjs;
+//   const decorateRange = decorateRange2;
+
+//   beforeEach(() => {
+//     document.body.innerHTML = `\
+// <div>
+//   <span id="a">
+//     Adipiscing elit pellentesque habitant morbi tristique senectus et netus et.
+//     Tortor,
+//     <span id="b">
+//       hoge fuga piyo
+//     </span>
+//     at auctor urna nunc id cursus metus aliquam eleifend mi in nulla
+//     posuere sollicitudin aliquam ultrices sagittis orci, a!
+//   </span>
+// </div>
+// `;
+//   });
+
+//   test('element not nested', () => {
+//     const e = document.getElementById('b');
+//     const e2 = e.cloneNode(true);
+//     const attrs = { class: 'hoge' };
+//     const span = document.createElement('span');
+//     span.appendChild(e.childNodes[0].cloneNode());
+//     span.setAttribute('class', 'hoge');
+//     e.replaceChild(span, e.childNodes[0]);
+//     const range = {
+//       startContainer: e2,
+//       endContainer: e2,
+//       commonAncestorContainer: e2
+//     };
+//     expect(decorateRange(range, attrs).commonAncestorContainer).toEqual(e);
+//   });
+
+//   test('textNode not nested, with offset', () => {
+//     const e = document.getElementById('b');
+//     const e2 = e.cloneNode(true);
+//     const text = e.childNodes[0].textContent;
+//     const soffset = 10;
+//     const eoffset = 15;
+//     const attrs = { class: 'hoge' };
+//     const span = document.createElement('span');
+//     const fragment = document.createDocumentFragment();
+//     span.setAttribute('class', 'hoge');
+//     span.appendChild(document.createTextNode(text.slice(soffset, eoffset)));
+//     fragment.appendChild(document.createTextNode(text.slice(0, soffset)));
+//     fragment.appendChild(span);
+//     fragment.appendChild(document.createTextNode(text.slice(eoffset)));
+//     e.replaceChild(fragment, e.childNodes[0]);
+//     const range = {
+//       startContainer: e2.childNodes[0],
+//       endContainer: e2.childNodes[0],
+//       commonAncestorContainer: e2.childNodes[0]
+//     };
+//     decorateRange(range, attrs, {
+//       startTextOffset: soffset,
+//       endTextOffset: eoffset
+//     });
+//     const { rangeGen } = elementjs;
+//     const gen = rangeGen(range);
+//     // expect(gen.next()).toEqual('a');
+//     expect(e2).toEqual(e);
+//   });
+
+//   test('nested', () => {
+//     const e = document.getElementById('a');
+//     const e2 = e.cloneNode(true);
+//     const attrs = { class: 'hoge' };
+//     const span = document.createElement('span');
+//     span.setAttribute('class', 'hoge');
+//     const span0 = span.cloneNode();
+//     span0.appendChild(e.childNodes[0].cloneNode());
+//     const span1 = span.cloneNode();
+//     span1.appendChild(e.childNodes[1].childNodes[0].cloneNode());
+//     const span2 = span.cloneNode();
+//     span2.appendChild(e.childNodes[2].cloneNode());
+//     e.replaceChild(span0, e.childNodes[0]);
+//     e.childNodes[1].replaceChild(span1, e.childNodes[1].childNodes[0]);
+//     e.replaceChild(span2, e.childNodes[2]);
+//     const range = {
+//       startContainer: e2,
+//       endContainer: e2,
+//       commonAncestorContainer: e2
+//     };
+//     expect(decorateRange(range, attrs).commonAncestorContainer).toEqual(e);
+//   });
+
+//   test('nested, with offset', () => {
+//     const e = document.getElementById('a');
+//     const e2 = e.cloneNode(true);
+//     const soffset = 10;
+//     const eoffset = 15;
+//     const attrs = { class: 'hoge' };
+//     const span = document.createElement('span');
+//     span.setAttribute('class', 'hoge');
+//     const span0 = span.cloneNode();
+//     const fragment0 = document.createDocumentFragment();
+//     const node0 = e.childNodes[0];
+//     const text0 = node0.textContent;
+//     span0.appendChild(document.createTextNode(text0.slice(soffset)));
+//     fragment0.appendChild(document.createTextNode(text0.slice(0, soffset)));
+//     fragment0.appendChild(span0);
+//     const span1 = span.cloneNode();
+//     const node1 = e.childNodes[1].childNodes[0];
+//     span1.appendChild(node1.cloneNode());
+//     const span2 = span.cloneNode();
+//     const fragment2 = document.createDocumentFragment();
+//     const node2 = e.childNodes[2];
+//     const text2 = node2.textContent;
+//     span2.appendChild(document.createTextNode(text2.slice(0, eoffset)));
+//     fragment2.appendChild(span2);
+//     fragment2.appendChild(document.createTextNode(text2.slice(eoffset)));
+//     e.childNodes[1].replaceChild(span1, node1);
+//     e.replaceChild(fragment0, node0);
+//     e.replaceChild(fragment2, node2);
+//     const range = {
+//       startContainer: e2,
+//       endContainer: e2,
+//       commonAncestorContainer: e2
+//     };
+//     expect(
+//       decorateRange(range, attrs, {
+//         startTextOffset: soffset,
+//         endTextOffset: eoffset
+//       }).commonAncestorContainer
+//     ).toEqual(e);
+//   });
+
+//   test('another element is different depth', () => {
+//     const spanA = document.getElementById('a');
+//     const spanB = document.getElementById('b');
+//     const commonAncestorContainer = spanA.cloneNode(true);
+//     const range = {
+//       startContainer: commonAncestorContainer,
+//       startOffset: 0,
+//       endContainer: commonAncestorContainer.childNodes[1],
+//       endOffset: 1,
+//       commonAncestorContainer: commonAncestorContainer
+//     };
+//     const attrs = { class: 'hoge' };
+//     const span = document.createElement('span');
+//     span.setAttribute('class', 'hoge');
+//     const spanAText = spanA.childNodes[0];
+//     spanA.replaceChild(decorateTextNode(spanAText, attrs), spanAText);
+//     const spanBText = spanB.childNodes[0];
+//     spanB.replaceChild(decorateTextNode(spanBText, attrs), spanBText);
+//     expect(decorateRange(range, attrs).commonAncestorContainer).toEqual(spanA);
+//   });
+// });
