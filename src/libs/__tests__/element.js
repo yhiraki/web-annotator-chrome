@@ -147,6 +147,48 @@ describe('element generator', () => {
   });
 });
 
+describe('node generator', () => {
+  const { nodeGen } = elementjs;
+
+  beforeEach(() => {
+    document.body.innerHTML = `\
+<div>
+  <span id="a">
+    Adipiscing elit pellentesque habitant morbi tristique senectus et netus et.
+    Tortor,
+    <span id="b">
+        Pellentesque nec nam aliquam sem et tortor consequat id porta nibh venenatis
+    </span>
+    at auctor urna nunc id cursus metus aliquam eleifend mi in nulla
+    posuere sollicitudin aliquam ultrices sagittis orci, a!
+  </span>
+</div>
+`;
+  });
+
+  test('One element with a text node', () => {
+    const el = document.getElementById('b');
+    const gen = nodeGen(el);
+    expect(gen.next().value.id).toBe('b');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE);
+    expect(gen.next().done).toBe(true);
+  });
+
+  test('nested element', () => {
+    const el = document.getElementsByTagName('div')[0];
+    const gen = nodeGen(el);
+    expect(gen.next().value.tagName).toBe('DIV');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // div
+    expect(gen.next().value.id).toBe('a');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
+    expect(gen.next().value.id).toBe('b');
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#b
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // span#a
+    expect(gen.next().value.nodeType).toBe(Node.TEXT_NODE); // div
+    expect(gen.next().done).toBe(true);
+  });
+});
+
 describe('range element generator', () => {
   const { rangeGen } = elementjs;
 

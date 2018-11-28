@@ -168,6 +168,17 @@ function* elementGen(element) {
   }
 }
 
+function* nodeGen(node) {
+  yield node;
+  for (const n of node.childNodes) {
+    if (n.hasChildNodes()) {
+      yield* nodeGen(n);
+    } else {
+      yield n;
+    }
+  }
+}
+
 function extractChildTextNodes(element) {
   const list = [];
   for (const n of element.childNodes) {
@@ -246,6 +257,7 @@ function decorateRange(range, attrs, options = {}) {
 export {
   isElement,
   elementGen,
+  nodeGen,
   rangeGen,
   getElementsByXPath,
   getXpath,
