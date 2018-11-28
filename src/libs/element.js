@@ -62,80 +62,6 @@ function isElement(obj) {
   return Boolean(obj && obj.nodeType && obj.nodeType === 1);
 }
 
-function searchCommonParentUp(targetNode, currentNode) {
-  if (!isElement(currentNode)) {
-    currentNode = currentNode.parentElement;
-  }
-  if (currentNode.contains(targetNode)) {
-    return currentNode;
-  } else {
-    return searchCommonParentUp(targetNode, currentNode.parentElement);
-  }
-  throw new Error();
-}
-
-function getCommonParent(node1, node2) {
-  const result = searchCommonParentUp(node1, node2);
-  if (result === document.body) {
-    return searchCommonParentUp(node2, node1);
-  } else {
-    return result;
-  }
-}
-
-function extractChildTextNodes(node) {
-  return Array.prototype.map
-    .call(node.childNodes, function(n) {
-      if (n.nodeType === Node.TEXT_NODE && n.data.trim().length > 0) {
-        return n;
-      } else if (n.childNodes) {
-        return extractChildTextNodes(n);
-      }
-    })
-    .flat();
-}
-
-function setAttributeToTextNode(node, attrs, startOffset_, endOffset_) {
-  const el = node.parentElement;
-  const text = node.cloneNode().data;
-  const startOffset = startOffset_ || 0;
-  const endOffset = endOffset_ || text.length;
-  const wrapper = document.createElement('span');
-  const fragment = document.createDocumentFragment();
-  for (let k in attrs) {
-    wrapper.setAttribute(k, attrs[k]);
-  }
-  wrapper.appendChild(
-    document.createTextNode(text.slice(startOffset, endOffset))
-  );
-  fragment.appendChild(document.createTextNode(text.slice(0, startOffset)));
-  fragment.appendChild(wrapper);
-  fragment.appendChild(
-    document.createTextNode(text.slice(endOffset, text.length))
-  );
-  el.replaceChild(fragment, node);
-}
-
-function setAttributeToTextNodeForRange(range, attrs) {
-  const parentNode = getCommonParent(range.startContainer, range.endContainer);
-  const textNodes = extractChildTextNodes(parentNode);
-  for (let i in textNodes) {
-    const n = textNodes[i];
-    let startOffset = null;
-    let endOffset = null;
-    if (n === range.startContainer) {
-      startOffset = range.startOffset;
-    }
-    if (n === range.endContainer) {
-      endOffset = range.endOffset;
-    }
-    if (range.intersectsNode(n)) {
-      setAttributeToTextNode(n, attrs, startOffset, endOffset);
-    }
-  }
-  window.getSelection().removeAllRanges();
-}
-
 function decorateTextNode(textNode, attrs, options = {}) {
   const wrapper = document.createDocumentFragment();
   const rawText = textNode.textContent;
@@ -177,16 +103,6 @@ function* nodeGen(node) {
       yield n;
     }
   }
-}
-
-function extractChildTextNodes(element) {
-  const list = [];
-  for (const n of element.childNodes) {
-    if (n.nodeType === n.TEXT_NODE) {
-      list.push(n);
-    }
-  }
-  return list;
 }
 
 function* rangeGen(range) {
@@ -247,7 +163,6 @@ export {
   getElementsByXPath,
   getXpath,
   getXPathFromElement,
-  setAttributeToTextNodeForRange,
   decorateTextNode,
   decorateRange
 };

@@ -60,10 +60,8 @@ describe('get xpath and get elements by xpath', () => {
 describe('replace text node to decorated', () => {
   const decorateTextNode = elementjs.decorateTextNode;
 
-  describe('plain text node', () => {
-    let el;
-    beforeEach(() => {
-      document.body.innerHTML = `\
+  beforeEach(() => {
+    document.body.innerHTML = `\
 <div>
   <span id='s'>
     Adipiscing elit pellentesque habitant morbi tristique senectus et netus et.
@@ -72,42 +70,42 @@ describe('replace text node to decorated', () => {
   </span>
 </div>
 `;
-      el = document.getElementById('s');
-    });
+  });
 
-    test('no offset', () => {
-      const attrs = { class: 'hoge' };
-      const text = el.childNodes[0];
-      const span = document.createElement('span');
-      const wrapper = document.createDocumentFragment();
-      span.setAttribute('class', 'hoge');
-      span.appendChild(text.cloneNode());
-      wrapper.appendChild(span);
-      expect(decorateTextNode(text, attrs)).toEqual(wrapper);
-    });
+  test('no offset', () => {
+    const attrs = { class: 'hoge' };
+    const el = document.getElementById('s');
+    const text = el.childNodes[0];
+    const span = document.createElement('span');
+    const wrapper = document.createDocumentFragment();
+    span.setAttribute('class', 'hoge');
+    span.appendChild(text.cloneNode());
+    wrapper.appendChild(span);
+    expect(decorateTextNode(text, attrs)).toEqual(wrapper);
+  });
 
-    test('with offset', () => {
-      const options = { startOffset: 10, endOffset: 50 };
-      const attrs = { class: 'hoge' };
-      const text = el.childNodes[0];
-      const rawText = text.textContent;
-      const wrapper = document.createDocumentFragment();
-      wrapper.appendChild(
-        document.createTextNode(rawText.slice(0, options.startOffset))
-      );
-      const span = document.createElement('span');
-      span.setAttribute('class', 'hoge');
-      span.appendChild(
-        document.createTextNode(
-          rawText.slice(options.startOffset, options.endOffset)
-        )
-      );
-      wrapper.appendChild(span);
-      wrapper.appendChild(
-        document.createTextNode(rawText.slice(options.endOffset))
-      );
-      expect(decorateTextNode(text, attrs, options)).toEqual(wrapper);
-    });
+  test('with offset', () => {
+    const options = { startOffset: 10, endOffset: 50 };
+    const attrs = { class: 'hoge' };
+    const el = document.getElementById('s');
+    const text = el.childNodes[0];
+    const rawText = text.textContent;
+    const wrapper = document.createDocumentFragment();
+    wrapper.appendChild(
+      document.createTextNode(rawText.slice(0, options.startOffset))
+    );
+    const span = document.createElement('span');
+    span.setAttribute('class', 'hoge');
+    span.appendChild(
+      document.createTextNode(
+        rawText.slice(options.startOffset, options.endOffset)
+      )
+    );
+    wrapper.appendChild(span);
+    wrapper.appendChild(
+      document.createTextNode(rawText.slice(options.endOffset))
+    );
+    expect(decorateTextNode(text, attrs, options)).toEqual(wrapper);
   });
 });
 
