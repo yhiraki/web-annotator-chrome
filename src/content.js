@@ -64,7 +64,6 @@ function restoreHighlights() {
   store.dispatch('loadHighlights').then(result => {
     result.forEach(i => {
       const range = parseRange(i.range);
-      console.log(range);
       if (!range.collapsed) {
         highlihgtRange(range);
       }
