@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import { serializeRange } from '../util/range';
+import { serializeRange } from '../libs/range';
 import storage from '../api/storage';
 
 Vue.use(Vuex);

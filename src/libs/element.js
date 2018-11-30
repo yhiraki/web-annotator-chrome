@@ -1,7 +1,14 @@
 import xpath from 'xpath';
 
-function getElementsByXPath(expression, parentElement) {
-  return xpath.select(expression, parentElement);
+function getElementsByXPath(expression, doc = document) {
+  const result = document.evaluate(
+    expression, // xpathExpression
+    doc, // contextNode
+    null, // namespaceResolver
+    XPathResult.ORDERED_NODE_ITERATOR_TYPE, // resultType
+    null // result
+  );
+  return result;
 }
 
 function getXpath(e) {

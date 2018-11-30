@@ -7,21 +7,16 @@ function serializeRange(range) {
     endXPath: getXPathFromElement(range.endContainer),
     endOffset: range.endOffset
   };
-  console.log(range);
-  console.log(serialized);
   return JSON.stringify(serialized);
 }
 
 function parseRange(json) {
   const rangeParam = JSON.parse(json);
   const range = document.createRange();
-  const startElements = getElementsByXPath(rangeParam.startXPath);
-  const endElements = getElementsByXPath(rangeParam.endXPath);
-  if (startElements.length < 1 && endElements.length < 1) {
-    return range;
-  }
-  range.setStart(startElements[0], rangeParam.startOffset);
-  range.setEnd(endElements[0], rangeParam.endOffset);
+  const startElement = getElementsByXPath(rangeParam.startXPath).iterateNext();
+  const endElement = getElementsByXPath(rangeParam.endXPath).iterateNext();
+  range.setStart(startElement, rangeParam.startOffset);
+  range.setEnd(endElement, rangeParam.endOffset);
   return range;
 }
 
