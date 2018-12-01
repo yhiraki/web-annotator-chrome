@@ -16,42 +16,40 @@ describe('Test isElement', () => {
   });
 });
 
-const dom = require('xmldom').DOMParser;
-
 describe('get xpath and get elements by xpath', () => {
   const getElementsByXPath = elementjs.getElementsByXPath;
   const getXpath = elementjs.getXpath;
   let doc;
 
   beforeEach(() => {
-    doc = new dom().parseFromString(`\
+    document.body.innerHTML = `\
 <div>
   <span>Adipiscing elit pellentesque habitant morbi tristique senectus et netus et. Tortor, at auctor urna nunc id cursus metus aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis orci, a!</span>
   <button id="button" />
 </div>
-`);
+`;
   });
 
   describe('element <span> which has no attribute', () => {
     test('get element', () => {
-      const el = doc.getElementsByTagName('span')[0];
-      expect(getElementsByXPath('//span', doc)[0]).toBe(el);
+      const el = document.getElementsByTagName('span')[0];
+      expect(getElementsByXPath('//span', doc).iterateNext()).toBe(el);
     });
 
     test('get xpath', () => {
-      const el = doc.getElementsByTagName('span')[0];
-      expect(getXpath(el)).toBe('/div/span');
+      const el = document.getElementsByTagName('span')[0];
+      expect(getXpath(el)).toBe('/html/body/div/span');
     });
   });
 
   describe('element <button> which has id', () => {
     test('get element', () => {
-      const el = doc.getElementById('button');
-      expect(getElementsByXPath('id("button")', doc)[0]).toBe(el);
+      const el = document.getElementById('button');
+      expect(getElementsByXPath('id("button")', doc).iterateNext()).toBe(el);
     });
 
     test('get xpath', () => {
-      const el = doc.getElementById('button');
+      const el = document.getElementById('button');
       expect(getXpath(el)).toBe('id("button")');
     });
   });
