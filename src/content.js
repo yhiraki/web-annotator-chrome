@@ -1,7 +1,7 @@
 import store from './store/index';
 
-import { parseRange } from './util/range';
-import { setAttributeToTextNodeForRange } from './util/element';
+import { parseRange } from './libs/range';
+import { decorateRange } from './libs/element';
 import Vue from 'vue';
 
 function isHighlighted(range) {
@@ -22,10 +22,21 @@ function isHighlighted(range) {
 
 function highlihgtRange(range) {
   console.log(range);
-  setAttributeToTextNodeForRange(range, {
-    style: 'background-color: yellow',
-    class: 'highlighted'
-  });
+  let options = {};
+  if (range.startContainer.nodeType === Node.TEXT_NODE) {
+    options.startTextOffset = range.startOffset;
+  }
+  if (range.endContainer.nodeType === Node.TEXT_NODE) {
+    options.endTextOffset = range.endOffset;
+  }
+  decorateRange(
+    range,
+    {
+      style: 'background-color: yellow',
+      class: 'highlighted'
+    },
+    options
+  );
 }
 
 function penDown() {
@@ -51,7 +62,6 @@ function penDown() {
 
 function restoreHighlights() {
   store.dispatch('loadHighlights').then(result => {
-    console.log(result);
     result.forEach(i => {
       const range = parseRange(i.range);
       if (!range.collapsed) {
