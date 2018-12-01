@@ -4,24 +4,8 @@ import { parseRange } from './libs/range';
 import { decorateRange } from './libs/element';
 import Vue from 'vue';
 
-function isHighlighted(range) {
-  const contents = range.cloneContents();
-  if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
-    if (
-      Array.from(
-        range.commonAncestorContainer.parentElement.classList
-      ).includes('highlighted')
-    ) {
-      return true;
-    }
-  } else if (contents.querySelectorAll('.highlighted').length > 0) {
-    return true;
-  }
-  return false;
-}
-
-function highlihgtRange(range) {
-  console.log(range);
+function highlihgtRange(range, hash = '') {
+  hash = hash || Math.floor(Math.random() * 10 ** 10);
   let options = {};
   if (range.startContainer.nodeType === Node.TEXT_NODE) {
     options.startTextOffset = range.startOffset;
@@ -29,13 +13,49 @@ function highlihgtRange(range) {
   if (range.endContainer.nodeType === Node.TEXT_NODE) {
     options.endTextOffset = range.endOffset;
   }
-  decorateRange(
+  const newNodes = decorateRange(
     range,
     {
-      style: 'background-color: yellow',
-      class: 'highlighted'
+      style: 'background-color: rgba(0, 255, 0, 0.2);',
+      class: `highlighted hash-${hash}`
     },
     options
+  );
+  for (const e of document.getElementsByClassName(`hash-${hash}`)) {
+    e.addEventListener('mouseover', mouseOverHighlight);
+    e.addEventListener('mouseout', mouseOutHighlight);
+  }
+}
+
+function mouseOverHighlight(event) {
+  const hashClasses = Array.prototype.filter.call(this.classList, function(s) {
+    return s.indexOf('hash') === 0;
+  });
+  focusHighlight(hashClasses);
+}
+
+function mouseOutHighlight(event) {
+  const hashClasses = Array.prototype.filter.call(this.classList, function(s) {
+    return s.indexOf('hash') === 0;
+  });
+  unFocusHighlight(hashClasses);
+}
+
+function focusHighlight(hashClass) {
+  Array.prototype.forEach.call(
+    document.getElementsByClassName(hashClass),
+    function(e) {
+      e.style.textDecoration = 'underline';
+    }
+  );
+}
+
+function unFocusHighlight(hashClass) {
+  Array.prototype.forEach.call(
+    document.getElementsByClassName(hashClass),
+    function(e) {
+      e.style.textDecoration = '';
+    }
   );
 }
 
@@ -46,10 +66,6 @@ function penDown() {
     return;
   }
   const range = selection.getRangeAt(0);
-  if (isHighlighted(range)) {
-    console.log('already highlighted');
-    return;
-  }
   const text = range.cloneContents().textContent.trim();
   if (text.length == 0) {
     console.log('no text content');
@@ -58,6 +74,7 @@ function penDown() {
   store.dispatch('addHighlight', range);
   store.dispatch('saveHighlights');
   highlihgtRange(range);
+  selection.empty();
 }
 
 function restoreHighlights() {
@@ -82,6 +99,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 window.addEventListener('load', restoreHighlights);
+window.addEventListener('load', function() {
+  document.createElement('style');
+});
 window.addEventListener('load', function() {
   let el = document.createElement('div');
   el.setAttribute('id', 'hogeapp');
