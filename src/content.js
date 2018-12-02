@@ -107,17 +107,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 window.addEventListener('load', restoreHighlights);
 window.addEventListener('load', function() {
-  document.createElement('style');
-});
-window.addEventListener('load', function() {
   let el = document.createElement('div');
   el.setAttribute('id', 'hogeapp');
-  el.innerHTML = ' <input v-model="a"> {{a}} <br/> {{highlights}}';
+  el.innerHTML = `
+<div style="position: fixed; top:0; right:0; z-index: 100">
+  <span>{{selectedId}}</span>
+  <input/><button>add</button>
+</textarea></div>
+`;
   document.body.appendChild(el);
   new Vue({
     el: '#hogeapp',
     store,
-    data: { a: 'hoge' },
     computed: {
       highlights() {
         return store.getters.allHighlights.map(i => i.id);
