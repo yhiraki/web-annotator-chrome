@@ -43,11 +43,13 @@ const highlights = {
   },
   actions: {
     addHighlight: ({ commit, getters }, range) => {
+      const id = getters.allHighlights.length;
       commit('pushHighlight', {
-        id: getters.allHighlights.length,
+        id: id,
         text: range.cloneContents().textContent.trim(),
         range: serializeRange(range)
       });
+      return id;
     },
     saveHighlights: ({ getters }) =>
       storage.save('highlihgts', JSON.stringify(getters.allHighlights)),

@@ -4,8 +4,11 @@ import { parseRange } from './libs/range';
 import { decorateRange } from './libs/element';
 import Vue from 'vue';
 
-function highlihgtRange(range, hash = '') {
-  hash = hash || Math.floor(Math.random() * 10 ** 10);
+const classPrefix = 'highlighted';
+const userName = 'me';
+
+function highlightRange(range, userName, highlightId) {
+  const id = highlightId;
   let options = {};
   if (range.startContainer.nodeType === Node.TEXT_NODE) {
     options.startTextOffset = range.startOffset;
@@ -17,42 +20,45 @@ function highlihgtRange(range, hash = '') {
     range,
     {
       style: 'background-color: rgba(0, 255, 0, 0.2);',
-      class: `highlighted hash-${hash}`
+      class: `${classPrefix} ${classPrefix}-${userName}-${id}`
     },
     options
   );
-  for (const e of document.getElementsByClassName(`hash-${hash}`)) {
+  for (const e of document.getElementsByClassName(
+    `${classPrefix}-${userName}-${id}`
+  )) {
     e.addEventListener('mouseover', mouseOverHighlight);
-    e.addEventListener('mouseout', mouseOutHighlight);
   }
 }
 
+const focusBatches = [];
 function mouseOverHighlight(event) {
-  const hashClasses = Array.prototype.filter.call(this.classList, function(s) {
-    return s.indexOf('hash') === 0;
+  const targetClasses = Array.prototype.filter.call(this.classList, function(
+    s
+  ) {
+    return s.indexOf(`${classPrefix}-${userName}-`) === 0;
   });
-  focusHighlight(hashClasses);
+  focusBatches.forEach(function(func) {
+    func();
+  });
+  focusHighlight(targetClasses);
+  focusBatches.push(function() {
+    unFocusHighlight(targetClasses);
+  });
 }
 
-function mouseOutHighlight(event) {
-  const hashClasses = Array.prototype.filter.call(this.classList, function(s) {
-    return s.indexOf('hash') === 0;
-  });
-  unFocusHighlight(hashClasses);
-}
-
-function focusHighlight(hashClass) {
+function focusHighlight(targetClasses) {
   Array.prototype.forEach.call(
-    document.getElementsByClassName(hashClass),
+    document.getElementsByClassName(targetClasses),
     function(e) {
       e.style.textDecoration = 'underline';
     }
   );
 }
 
-function unFocusHighlight(hashClass) {
+function unFocusHighlight(targetClasses) {
   Array.prototype.forEach.call(
-    document.getElementsByClassName(hashClass),
+    document.getElementsByClassName(targetClasses),
     function(e) {
       e.style.textDecoration = '';
     }
@@ -71,18 +77,19 @@ function penDown() {
     console.log('no text content');
     return;
   }
-  store.dispatch('addHighlight', range);
+  const id = store.dispatch('addHighlight', range);
   store.dispatch('saveHighlights');
-  highlihgtRange(range);
+  highlightRange(range, userName, id);
   selection.empty();
 }
 
 function restoreHighlights() {
   store.dispatch('loadHighlights').then(result => {
     result.forEach(i => {
+      const id = i.id;
       const range = parseRange(i.range);
       if (!range.collapsed) {
-        highlihgtRange(range);
+        highlightRange(range, userName, id);
       }
     });
   });
