@@ -1,6 +1,6 @@
 import xpath from 'xpath';
 
-function getElementsByXPath(expression, doc = document) {
+const getElementsByXPath = (expression, doc = document) => {
   const result = document.evaluate(
     expression, // xpathExpression
     doc, // contextNode
@@ -9,9 +9,9 @@ function getElementsByXPath(expression, doc = document) {
     null // result
   );
   return result;
-}
+};
 
-function getXpath(e) {
+const getXpath = e => {
   if (e.nodeType == e.DOCUMENT_NODE) {
     return '';
   }
@@ -36,10 +36,10 @@ function getXpath(e) {
   }
   t += '[' + s + ']';
   return t;
-}
+};
 
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
-function getXPathFromElement(element) {
+const getXPathFromElement = element => {
   if (element.id && element.id !== '') return 'id("' + element.id + '")';
   if (element === document.body) return '/HTML/' + element.tagName;
 
@@ -63,13 +63,13 @@ function getXPathFromElement(element) {
     }
     if (sibling.tagName === element.tagName) nodeIdx[sibling.nodeType]++;
   }
-}
+};
 
-function isElement(obj) {
+const isElement = obj => {
   return Boolean(obj && obj.nodeType && obj.nodeType === 1);
-}
+};
 
-function decorateTextNode(textNode, attrs, options = {}) {
+const decorateTextNode = (textNode, attrs, options = {}) => {
   const wrapper = document.createDocumentFragment();
   const rawText = textNode.textContent;
   const startOffset = options.startOffset || 0;
@@ -90,18 +90,18 @@ function decorateTextNode(textNode, attrs, options = {}) {
     wrapper.appendChild(document.createTextNode(rawText.slice(endOffset)));
   }
   return wrapper;
-}
+};
 
-function* elementGen(element) {
+const elementGen = function*(element) {
   yield element;
   for (const e of element.childNodes) {
     if (e.hasChildNodes()) {
       yield* elementGen(e);
     }
   }
-}
+};
 
-function* nodeGen(node) {
+const nodeGen = function*(node) {
   yield node;
   for (const n of node.childNodes) {
     if (n.hasChildNodes()) {
@@ -110,13 +110,13 @@ function* nodeGen(node) {
       yield n;
     }
   }
-}
+};
 
-function* rangeGen(range) {
+const rangeGen = function*(range) {
   let inRange = false;
-  let sc = range.startContainer;
-  let ec = range.endContainer;
-  let cc = range.commonAncestorContainer;
+  const sc = range.startContainer;
+  const ec = range.endContainer;
+  const cc = range.commonAncestorContainer;
   if (sc === ec) {
     yield* nodeGen(cc);
     return;
@@ -135,9 +135,9 @@ function* rangeGen(range) {
     }
     yield e;
   }
-}
+};
 
-function decorateRange(range, attrs, options = {}) {
+const decorateRange = (range, attrs, options = {}) => {
   let doList = [];
   for (const node of rangeGen(range)) {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -160,7 +160,7 @@ function decorateRange(range, attrs, options = {}) {
     d(opt);
   }
   return range;
-}
+};
 
 export {
   isElement,

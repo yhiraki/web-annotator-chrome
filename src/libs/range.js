@@ -1,6 +1,6 @@
 import { getElementsByXPath, getXPathFromElement } from './element';
 
-function serializeRange(range) {
+const serializeRange = range => {
   const serialized = {
     startXPath: getXPathFromElement(range.startContainer),
     startOffset: range.startOffset,
@@ -8,9 +8,9 @@ function serializeRange(range) {
     endOffset: range.endOffset
   };
   return JSON.stringify(serialized);
-}
+};
 
-function parseRange(json) {
+const parseRange = json => {
   const rangeParam = JSON.parse(json);
   const range = document.createRange();
   const startElement = getElementsByXPath(rangeParam.startXPath).iterateNext();
@@ -18,15 +18,15 @@ function parseRange(json) {
   range.setStart(startElement, rangeParam.startOffset);
   range.setEnd(endElement, rangeParam.endOffset);
   return range;
-}
+};
 
-function isRangeEqual(range1, range2) {
+const isRangeEqual = (range1, range2) => {
   return (
     range1.startOffset === range2.startOffset &&
     range1.startContainer === range2.startContainer &&
     range1.endOffset === range2.endOffset &&
     range1.endContainer === range2.endContainer
   );
-}
+};
 
 export { serializeRange, parseRange, isRangeEqual };

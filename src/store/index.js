@@ -12,6 +12,10 @@ const notes = {
   state: {
     notes: []
   },
+  getters: {
+    allNotes: state => state.notes,
+    notes: state => ({ id }) => state.filter(i => i.highlightId === id)
+  },
   mutations: {
     pushNote(state, note) {
       state.push(note);
@@ -28,12 +32,15 @@ const highlights = {
   // initial state
   // shape: [{id, range, text}]
   state: {
+    current: null,
     highlights: []
   },
   getters: {
+    currentHighlight: state => state.currentHighlight,
     allHighlights: state => state.highlights
   },
   mutations: {
+    setCurrentHighlight: (state, highlight) => (state.current = highlight),
     pushHighlight: (state, highlight) => state.highlights.push(highlight),
     replaceHighlights: (state, highlights) => (state.highlights = highlights),
     uniqueHighlights: state =>

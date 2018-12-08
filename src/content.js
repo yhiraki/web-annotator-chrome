@@ -7,8 +7,7 @@ import Vue from 'vue';
 const classPrefix = 'highlighted';
 const userName = 'me';
 
-function highlightRange(range, userName, highlightId) {
-  const id = highlightId;
+const highlightRange = (range, userName, id) => {
   let options = {};
   if (range.startContainer.nodeType === Node.TEXT_NODE) {
     options.startTextOffset = range.startOffset;
@@ -16,56 +15,50 @@ function highlightRange(range, userName, highlightId) {
   if (range.endContainer.nodeType === Node.TEXT_NODE) {
     options.endTextOffset = range.endOffset;
   }
-  const newNodes = decorateRange(
-    range,
-    {
-      style: 'background-color: rgba(0, 255, 0, 0.2);',
-      class: `${classPrefix} ${classPrefix}-${userName}-${id}`
-    },
-    options
-  );
+  const uniqueClass = `${classPrefix}-${userName}-${id}`;
+  const highlightAttrs = {
+    style: 'background-color: rgba(0, 255, 0, 0.2);',
+    class: `${classPrefix} ${uniqueClass}`
+  };
+  const newNodes = decorateRange(range, highlightAttrs, options);
   for (const e of document.getElementsByClassName(
     `${classPrefix}-${userName}-${id}`
   )) {
     e.addEventListener('mouseover', mouseOverHighlight);
   }
-}
+};
 
 const focusBatches = [];
-function mouseOverHighlight(event) {
-  const targetClasses = Array.prototype.filter.call(this.classList, function(
-    s
-  ) {
-    return s.indexOf(`${classPrefix}-${userName}-`) === 0;
-  });
+const mouseOverHighlight = event => {
+  const targetClasses = Array.prototype.filter.call(
+    event.srcElement.classList,
+    function(s) {
+      return s.indexOf(`${classPrefix}-${userName}-`) === 0;
+    }
+  );
   focusBatches.forEach(function(func) {
     func();
+    store.commit('setCurrentHighlight', null);
   });
   focusHighlight(targetClasses);
   focusBatches.push(function() {
     unFocusHighlight(targetClasses);
   });
-}
+};
 
-function focusHighlight(targetClasses) {
-  Array.prototype.forEach.call(
-    document.getElementsByClassName(targetClasses),
-    function(e) {
-      e.style.textDecoration = 'underline';
-    }
-  );
-}
+const focusHighlight = targetClass => {
+  for (const el of document.getElementsByClassName(targetClass)) {
+    el.style.textDecoration = 'underline';
+  }
+};
 
-function unFocusHighlight(targetClasses) {
-  Array.prototype.forEach.call(
-    document.getElementsByClassName(targetClasses),
-    function(e) {
-      e.style.textDecoration = '';
-    }
-  );
-}
+const unFocusHighlight = targetClass => {
+  for (const el of document.getElementsByClassName(targetClass)) {
+    el.style.textDecoration = '';
+  }
+};
 
-function penDown() {
+const penDown = () => {
   const selection = window.getSelection();
   if (selection.isCollapsed) {
     console.log('collapsed');
@@ -81,21 +74,21 @@ function penDown() {
   store.dispatch('saveHighlights');
   highlightRange(range, userName, id);
   selection.empty();
-}
+};
 
-function restoreHighlights() {
+const restoreHighlights = () => {
   store.dispatch('loadHighlights').then(result => {
-    result.forEach(i => {
+    for (const i of result) {
       const id = i.id;
       const range = parseRange(i.range);
       if (!range.collapsed) {
         highlightRange(range, userName, id);
       }
-    });
+    }
   });
-}
+};
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log(request);
   if (request == 'enablePen') {
     window.addEventListener('mouseup', penDown);
@@ -106,13 +99,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 window.addEventListener('load', restoreHighlights);
-window.addEventListener('load', function() {
+window.addEventListener('load', () => {
   let el = document.createElement('div');
   el.setAttribute('id', 'hogeapp');
   el.innerHTML = `
 <div style="position: fixed; top:0; right:0; z-index: 100">
-  <span>{{selectedId}}</span>
+  <span>{{currentHighlight.text}}</span>
   <input/><button>add</button>
+  <p v-for="note in notes">{note.content}</p>
 </textarea></div>
 `;
   document.body.appendChild(el);
@@ -122,12 +116,15 @@ window.addEventListener('load', function() {
     computed: {
       highlights() {
         return store.getters.allHighlights.map(i => i.id);
+      },
+      notes() {
+        return store.notes.getters.notes(this.currentHighlight);
       }
     }
   });
 });
 
-chrome.storage.sync.get('enabled', function(data) {
+chrome.storage.sync.get('enabled', data => {
   if (data.enabled) {
     window.addEventListener('mouseup', penDown);
   }
