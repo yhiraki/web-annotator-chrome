@@ -17,9 +17,7 @@ describe('Test isElement', () => {
 });
 
 describe('get xpath and get elements by xpath', () => {
-  const getElementsByXPath = elementjs.getElementsByXPath;
-  const getXpath = elementjs.getXpath;
-  let doc;
+  const { getXPathFromElement, getElementsByXPath } = elementjs;
 
   beforeEach(() => {
     document.body.innerHTML = `\
@@ -33,24 +31,26 @@ describe('get xpath and get elements by xpath', () => {
   describe('element <span> which has no attribute', () => {
     test('get element', () => {
       const el = document.getElementsByTagName('span')[0];
-      expect(getElementsByXPath('//span', doc).iterateNext()).toBe(el);
+      expect(getElementsByXPath('//span', document).iterateNext()).toBe(el);
     });
 
     test('get xpath', () => {
       const el = document.getElementsByTagName('span')[0];
-      expect(getXpath(el)).toBe('/html/body/div/span');
+      expect(getXPathFromElement(el)).toBe('/html/body/div[1]/span[1]');
     });
   });
 
   describe('element <button> which has id', () => {
     test('get element', () => {
       const el = document.getElementById('button');
-      expect(getElementsByXPath('id("button")', doc).iterateNext()).toBe(el);
+      expect(getElementsByXPath('id("button")', document).iterateNext()).toBe(
+        el
+      );
     });
 
     test('get xpath', () => {
       const el = document.getElementById('button');
-      expect(getXpath(el)).toBe('id("button")');
+      expect(getXPathFromElement(el)).toBe('id("button")');
     });
   });
 });

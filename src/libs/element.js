@@ -11,37 +11,10 @@ const getElementsByXPath = (expression, doc = document) => {
   return result;
 };
 
-const getXpath = e => {
-  if (e.nodeType == e.DOCUMENT_NODE) {
-    return '';
-  }
-  if (e.hasAttribute('id')) {
-    return 'id("' + e.getAttribute('id') + '")';
-  }
-  var p = e.parentNode;
-  var t = getXpath(p) + '/' + e.tagName.toLowerCase();
-  var c = p.childNodes;
-  var g = 0;
-  var s;
-  for (var i = 0, n = c.length; i < n; ++i) {
-    if (c[i].nodeName == e.nodeName && c[i].nodeType == e.nodeType) {
-      ++g;
-      if (c[i] == e) {
-        s = g;
-      }
-    }
-  }
-  if (g == 1) {
-    return t;
-  }
-  t += '[' + s + ']';
-  return t;
-};
-
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
 const getXPathFromElement = element => {
   if (element.id && element.id !== '') return 'id("' + element.id + '")';
-  if (element === document.body) return '/HTML/' + element.tagName;
+  if (element === document.body) return '/html/' + element.tagName;
 
   const nodeIdx = {};
   const siblings = element.parentNode.childNodes;
@@ -59,7 +32,9 @@ const getXPathFromElement = element => {
           path = '/text()' + idxString;
           break;
       }
-      return getXPathFromElement(element.parentNode) + path;
+      return (
+        getXPathFromElement(element.parentNode) + path
+      ).toLocaleLowerCase();
     }
     if (sibling.tagName === element.tagName) nodeIdx[sibling.nodeType]++;
   }
@@ -168,7 +143,6 @@ export {
   nodeGen,
   rangeGen,
   getElementsByXPath,
-  getXpath,
   getXPathFromElement,
   decorateTextNode,
   decorateRange
