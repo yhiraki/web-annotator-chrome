@@ -13,30 +13,28 @@ const getElementsByXPath = (expression, doc = document) => {
 
 // https://stackoverflow.com/questions/2631820/how-do-i-ensure-saved-click-coordinates-can-be-reloaed-to-the-same-place-even-i/2631931#2631931
 const getXPathFromElement = element => {
-  if (element.id && element.id !== '') return 'id("' + element.id + '")';
+  if (!element) return '//';
+  if (element.nodeType !== Node.ELEMENT_NODE)
+    return getXPathFromElement(element.parentNode);
+  if (element.id) return 'id("' + element.id + '")';
   if (element === document.body) return '/html/' + element.tagName;
 
   const nodeIdx = {};
   const siblings = element.parentNode.childNodes;
-  for (let i = 0; i < siblings.length; i++) {
-    let sibling = siblings[i];
-    nodeIdx[sibling.nodeType] = nodeIdx[sibling.nodeType] || 1;
-    if (sibling === element) {
-      const idxString = '[' + nodeIdx[element.nodeType] + ']';
-      let path = '';
-      switch (element.nodeType) {
-        case Node.ELEMENT_NODE:
-          path = '/' + element.tagName + idxString;
-          break;
-        case Node.TEXT_NODE:
-          path = '/text()' + idxString;
-          break;
+  for (const sibling of siblings) {
+    if (sibling.nodeType === Node.ELEMENT_NODE) {
+      nodeIdx[sibling.tagName] = nodeIdx[sibling.tagName] + 1 || 1;
+      if (sibling === element) {
+        return (
+          getXPathFromElement(element.parentNode) +
+          '/' +
+          element.tagName +
+          '[' +
+          nodeIdx[element.tagName] +
+          ']'
+        ).toLocaleLowerCase();
       }
-      return (
-        getXPathFromElement(element.parentNode) + path
-      ).toLocaleLowerCase();
     }
-    if (sibling.tagName === element.tagName) nodeIdx[sibling.nodeType]++;
   }
 };
 

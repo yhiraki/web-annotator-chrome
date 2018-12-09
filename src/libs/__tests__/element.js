@@ -23,7 +23,8 @@ describe('get xpath and get elements by xpath', () => {
     document.body.innerHTML = `\
 <div>
   <span>Adipiscing elit pellentesque habitant morbi tristique senectus et netus et. Tortor, at auctor urna nunc id cursus metus aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis orci, a!</span>
-  <button id="button" />
+  <button id="button">ok</button>
+  <span>hoge</span>
 </div>
 `;
   });
@@ -36,6 +37,18 @@ describe('get xpath and get elements by xpath', () => {
 
     test('get xpath', () => {
       const el = document.getElementsByTagName('span')[0];
+      expect(getXPathFromElement(el)).toBe('/html/body/div[1]/span[1]');
+    });
+
+    test('get xpath2', () => {
+      const el = document.getElementsByTagName('span')[1];
+      expect(getXPathFromElement(el)).toBe('/html/body/div[1]/span[2]');
+    });
+  });
+
+  describe('node is textNode', () => {
+    test('get xpath', () => {
+      const el = document.getElementsByTagName('span')[0].childNodes[0];
       expect(getXPathFromElement(el)).toBe('/html/body/div[1]/span[1]');
     });
   });
